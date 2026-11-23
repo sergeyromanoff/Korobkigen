@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex, nofollow" />
   <meta name="googlebot" content="noindex, nofollow" />
-  <title>Генератор развёртки коробки + Экономная раскладка на офсетные листы</title>
+  <title>Генератор развёртки коробки A02 + Экономная раскладка на офсетные листы</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -242,61 +242,11 @@
             </button>
           </div>
 
-          <!-- 1. ФОРМАТ ОФСЕТНОГО ЛИСТА -->
-          <section class="bg-slate-850 border border-slate-800 rounded-xl p-3.5 space-y-3">
-            <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-300 flex items-center gap-2">
-              <span class="w-1.5 h-4 rounded-full bg-cyan-500"></span>
-              1. Формат офсетного листа
-            </h2>
-
-            <div class="grid grid-cols-1 gap-2">
-              <button type="button" data-format="35x50" class="sheet-fmt-btn text-left px-3 py-2.5 rounded-xl border transition cursor-pointer bg-slate-900 border-slate-700 hover:border-cyan-500/50 flex items-center justify-between">
-                <div>
-                  <div class="text-xs font-bold font-mono text-white">Лист 35 × 50 см</div>
-                  <div class="text-[10px] font-mono text-slate-400">Печатная зона: 330 × 480 мм</div>
-                </div>
-                <span id="badgeCount35" class="px-2.5 py-1 rounded-lg font-mono text-xs font-bold bg-slate-800 text-slate-300">—</span>
-              </button>
-
-              <button type="button" data-format="50x70" class="sheet-fmt-btn text-left px-3 py-2.5 rounded-xl border transition cursor-pointer bg-cyan-500/15 border-cyan-500/60 flex items-center justify-between">
-                <div>
-                  <div class="text-xs font-bold font-mono text-white">Лист 50 × 70 см</div>
-                  <div class="text-[10px] font-mono text-slate-400">Печатная зона: 480 × 680 мм</div>
-                </div>
-                <span id="badgeCount50" class="px-2.5 py-1 rounded-lg font-mono text-xs font-bold bg-emerald-500/20 text-emerald-300">—</span>
-              </button>
-
-              <button type="button" data-format="custom" class="sheet-fmt-btn text-left px-3 py-2.5 rounded-xl border transition cursor-pointer bg-slate-900 border-slate-700 hover:border-cyan-500/50 flex items-center justify-between">
-                <div>
-                  <div class="text-xs font-bold font-mono text-white">Свой размер листа</div>
-                  <div id="customFmtSublabel" class="text-[10px] font-mono text-slate-400">Зона: 680 × 980 мм</div>
-                </div>
-                <span id="badgeCountCustom" class="px-2.5 py-1 rounded-lg font-mono text-xs font-bold bg-slate-800 text-slate-300">—</span>
-              </button>
-            </div>
-
-            <!-- Поля для своего формата -->
-            <div id="customFormatInputs" class="hidden pt-2 border-t border-slate-800 grid grid-cols-3 gap-2">
-              <div>
-                <label for="inputCustomW" class="block text-[10px] text-slate-400 mb-1">Лист Ш (мм)</label>
-                <input id="inputCustomW" type="number" min="100" max="1600" step="5" value="700" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs font-mono text-white focus:outline-none focus:border-cyan-500" />
-              </div>
-              <div>
-                <label for="inputCustomH" class="block text-[10px] text-slate-400 mb-1">Лист В (мм)</label>
-                <input id="inputCustomH" type="number" min="100" max="1600" step="5" value="1000" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs font-mono text-white focus:outline-none focus:border-cyan-500" />
-              </div>
-              <div>
-                <label for="inputCustomMargin" class="block text-[10px] text-slate-400 mb-1">Поля (мм)</label>
-                <input id="inputCustomMargin" type="number" min="0" max="50" step="1" value="10" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs font-mono text-white focus:outline-none focus:border-cyan-500" />
-              </div>
-            </div>
-          </section>
-
-          <!-- 2. НАСТРОЙКИ ЭКОНОМНОГО НЕСТИНГА -->
+          <!-- 1. НАСТРОЙКИ ЭКОНОМНОГО НЕСТИНГА -->
           <section class="bg-slate-850 border border-slate-800 rounded-xl p-3.5 space-y-3">
             <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-300 flex items-center gap-2">
               <span class="w-1.5 h-4 rounded-full bg-emerald-500"></span>
-              2. Зазор и стратегия нестинга
+              1. Зазор и стратегия нестинга
             </h2>
 
             <div class="grid grid-cols-2 gap-2.5">
@@ -333,11 +283,11 @@
             </button>
           </section>
 
-          <!-- 3. РАСЧЁТ ТИРАЖА И ЭКОНОМИИ -->
+          <!-- 2. РАСЧЁТ ТИРАЖА И ЭКОНОМИИ -->
           <section class="bg-slate-850 border border-slate-800 rounded-xl p-3.5 space-y-3">
             <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-300 flex items-center gap-2">
               <span class="w-1.5 h-4 rounded-full bg-amber-400"></span>
-              3. Тираж и экономика листа
+              2. Тираж и экономика листа
             </h2>
 
             <div class="grid grid-cols-2 gap-2">
@@ -375,6 +325,51 @@
 
     <!-- ПРАВАЯ ОБЛАСТЬ: ИНТЕРАКТИВНЫЙ ЧЕРТЁЖ -->
     <main class="flex-1 flex flex-col min-w-0 lg:h-[calc(100vh-58px)] overflow-hidden">
+
+      <!-- ПАНЕЛЬ ПЕРЕКЛЮЧЕНИЯ ФОРМАТА ЛИСТА НАД ЧЕРТЕЖОМ (только в режиме раскладки) -->
+      <div id="sheetFormatBar" class="hidden px-3 sm:px-4 py-2.5 bg-slate-900/95 border-b border-slate-800 space-y-2 shrink-0">
+        <div class="grid grid-cols-3 gap-1.5 sm:gap-2">
+          <button type="button" data-format="35x50" class="sheet-fmt-btn text-left px-2.5 py-2 rounded-xl border transition cursor-pointer bg-slate-950/70 border-slate-700 hover:border-cyan-500/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+            <div class="min-w-0">
+              <div class="text-[11px] sm:text-xs font-bold font-mono text-white truncate">35×50 см</div>
+              <div class="text-[9px] sm:text-[10px] font-mono text-slate-400 truncate">330×480 мм</div>
+            </div>
+            <span id="badgeCount35" class="px-2 py-0.5 rounded-md font-mono text-[10px] sm:text-xs font-bold bg-slate-800 text-slate-300 self-start sm:self-center shrink-0">—</span>
+          </button>
+
+          <button type="button" data-format="50x70" class="sheet-fmt-btn text-left px-2.5 py-2 rounded-xl border transition cursor-pointer bg-cyan-500/15 border-cyan-500/60 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+            <div class="min-w-0">
+              <div class="text-[11px] sm:text-xs font-bold font-mono text-white truncate">50×70 см</div>
+              <div class="text-[9px] sm:text-[10px] font-mono text-slate-400 truncate">480×680 мм</div>
+            </div>
+            <span id="badgeCount50" class="px-2 py-0.5 rounded-md font-mono text-[10px] sm:text-xs font-bold bg-emerald-500/20 text-emerald-300 self-start sm:self-center shrink-0">—</span>
+          </button>
+
+          <button type="button" data-format="custom" class="sheet-fmt-btn text-left px-2.5 py-2 rounded-xl border transition cursor-pointer bg-slate-950/70 border-slate-700 hover:border-cyan-500/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+            <div class="min-w-0">
+              <div class="text-[11px] sm:text-xs font-bold font-mono text-white truncate">Свой лист</div>
+              <div id="customFmtSublabel" class="text-[9px] sm:text-[10px] font-mono text-slate-400 truncate">680×980 мм</div>
+            </div>
+            <span id="badgeCountCustom" class="px-2 py-0.5 rounded-md font-mono text-[10px] sm:text-xs font-bold bg-slate-800 text-slate-300 self-start sm:self-center shrink-0">—</span>
+          </button>
+        </div>
+
+        <!-- Поля для своего формата (открываются под кнопками при выборе «Свой лист») -->
+        <div id="customFormatInputs" class="hidden pt-2 border-t border-slate-800/80 grid grid-cols-3 gap-2 max-w-md">
+          <div>
+            <label for="inputCustomW" class="block text-[10px] text-slate-400 mb-1">Лист Ш (мм)</label>
+            <input id="inputCustomW" type="number" min="100" max="1600" step="5" value="700" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs font-mono text-white focus:outline-none focus:border-cyan-500" />
+          </div>
+          <div>
+            <label for="inputCustomH" class="block text-[10px] text-slate-400 mb-1">Лист В (мм)</label>
+            <input id="inputCustomH" type="number" min="100" max="1600" step="5" value="1000" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs font-mono text-white focus:outline-none focus:border-cyan-500" />
+          </div>
+          <div>
+            <label for="inputCustomMargin" class="block text-[10px] text-slate-400 mb-1">Поля (мм)</label>
+            <input id="inputCustomMargin" type="number" min="0" max="50" step="1" value="10" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs font-mono text-white focus:outline-none focus:border-cyan-500" />
+          </div>
+        </div>
+      </div>
 
       <!-- ПАНЕЛЬ ИНСТРУМЕНТОВ ЧЕРТЕЖА -->
       <div class="px-4 py-2 bg-slate-900 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs shrink-0">
@@ -1295,10 +1290,10 @@
         const el = document.getElementById(id);
         if (!res || res.count === 0) {
           el.textContent = '0 шт';
-          el.className = 'px-2.5 py-1 rounded-lg font-mono text-xs font-bold bg-rose-500/15 text-rose-300 border border-rose-500/30';
+          el.className = 'px-2 py-0.5 rounded-md font-mono text-[10px] sm:text-xs font-bold bg-rose-500/15 text-rose-300 border border-rose-500/30 self-start sm:self-center shrink-0';
         } else {
           el.textContent = `${res.count} шт/л`;
-          el.className = 'px-2.5 py-1 rounded-lg font-mono text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
+          el.className = 'px-2 py-0.5 rounded-md font-mono text-[10px] sm:text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 self-start sm:self-center shrink-0';
         }
       };
 
@@ -1307,7 +1302,7 @@
       updateBadge('badgeCountCustom', state.nestResults['custom']);
 
       const customSpec = getSheetSpec('custom');
-      document.getElementById('customFmtSublabel').textContent = `Зона: ${f(customSpec.workW)} × ${f(customSpec.workH)} мм`;
+      document.getElementById('customFmtSublabel').textContent = `${f(customSpec.workW)}×${f(customSpec.workH)} мм`;
       document.getElementById('sheetBoxSummary').textContent = `${f(g.L)}×${f(g.W)}×${f(g.H)} мм (крой ${f(g.totalW)}×${f(g.totalH)})`;
 
       const res = state.nestResults[state.sheetFormat];
@@ -1492,6 +1487,7 @@ ${allCuts}
 
       document.getElementById('boxControlsPanel').classList.toggle('hidden', isSheet);
       document.getElementById('sheetControlsPanel').classList.toggle('hidden', !isSheet);
+      document.getElementById('sheetFormatBar').classList.toggle('hidden', !isSheet);
 
       const tabBox = document.getElementById('tabBoxMode');
       const tabSheet = document.getElementById('tabSheetMode');
@@ -1526,8 +1522,8 @@ ${allCuts}
       document.querySelectorAll('.sheet-fmt-btn').forEach(btn => {
         const active = btn.dataset.format === fmtId;
         btn.className = active
-          ? 'sheet-fmt-btn text-left px-3 py-2.5 rounded-xl border transition cursor-pointer bg-cyan-500/15 border-cyan-500/60 flex items-center justify-between'
-          : 'sheet-fmt-btn text-left px-3 py-2.5 rounded-xl border transition cursor-pointer bg-slate-900 border-slate-700 hover:border-cyan-500/50 flex items-center justify-between';
+          ? 'sheet-fmt-btn text-left px-2.5 py-2 rounded-xl border transition cursor-pointer bg-cyan-500/15 border-cyan-500/60 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1'
+          : 'sheet-fmt-btn text-left px-2.5 py-2 rounded-xl border transition cursor-pointer bg-slate-950/70 border-slate-700 hover:border-cyan-500/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1';
       });
       document.getElementById('customFormatInputs').classList.toggle('hidden', fmtId !== 'custom');
 
