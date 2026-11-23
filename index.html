@@ -1,0 +1,1747 @@
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="googlebot" content="noindex, nofollow" />
+  <title>Генератор развёртки коробки A02 + Экономная раскладка на офсетные листы</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          },
+          colors: {
+            slate: {
+              850: '#151e2e',
+              950: '#0a0f1a'
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background-color: #0a0f1a;
+      color: #e2e8f0;
+    }
+    .blueprint-grid {
+      background-color: #0b1220;
+      background-image:
+        linear-gradient(to right, rgba(56, 189, 248, 0.06) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(56, 189, 248, 0.06) 1px, transparent 1px),
+        linear-gradient(to right, rgba(56, 189, 248, 0.12) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(56, 189, 248, 0.12) 1px, transparent 1px);
+      background-size: 20px 20px, 20px 20px, 100px 100px, 100px 100px;
+    }
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      opacity: 0.6;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col overflow-x-hidden selection:bg-cyan-500/30 selection:text-cyan-200">
+
+  <!-- ШАПКА МОДУЛЯ -->
+  <header class="bg-slate-900/95 border-b border-slate-800 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 shrink-0 z-20">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border border-cyan-500/40 flex items-center justify-center text-cyan-400 shadow-inner">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+          <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+          <line x1="12" y1="22.08" x2="12" y2="12" />
+        </svg>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="text-sm sm:text-base font-bold text-white tracking-tight">Генератор коробок • CODE A02</h1>
+          <span class="px-2 py-0.5 rounded-md bg-cyan-500/15 border border-cyan-500/30 text-[10px] font-mono font-semibold text-cyan-300">АВТОДНО + НЕСТИНГ</span>
+        </div>
+        <p class="text-[11px] text-slate-400">Параметрический штамп 1:1 (Рез #FF0000 / Биговка #0000FF) и раскладка на офсет</p>
+      </div>
+    </div>
+
+    <!-- Переключатель режимов в шапке -->
+    <div class="flex items-center bg-slate-950/90 border border-slate-800 rounded-xl p-1 gap-1">
+      <button id="tabBoxMode" type="button" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
+        1. Крой коробки
+      </button>
+      <button id="tabSheetMode" type="button" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer text-slate-400 hover:text-white border border-transparent flex items-center gap-1.5">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="18" height="18" rx="2" />
+          <line x1="3" y1="9" x2="21" y2="9" />
+          <line x1="9" y1="21" x2="9" y2="9" />
+        </svg>
+        <span>2. Разложить на листы</span>
+      </button>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2">
+      <button id="btnDownloadSvg" type="button" class="px-3.5 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 active:bg-cyan-600 text-slate-950 font-semibold text-xs flex items-center gap-2 transition shadow-lg shadow-cyan-500/20 cursor-pointer">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="7 10 12 15 17 10" />
+          <line x1="12" y1="15" x2="12" y2="3" />
+        </svg>
+        <span id="btnDownloadSvgLabel">Скачать SVG (1:1 мм)</span>
+      </button>
+
+      <button id="btnDownloadHtml" type="button" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-medium text-xs flex items-center gap-1.5 transition cursor-pointer" title="Сохранить этот генератор как автономный HTML-файл">
+        <svg class="w-3.5 h-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="16 18 22 12 16 6" />
+          <polyline points="8 6 2 12 8 18" />
+        </svg>
+        <span class="hidden sm:inline">HTML-модуль</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ОСНОВНАЯ РАБОЧАЯ ОБЛАСТЬ -->
+  <div class="flex-1 flex flex-col lg:flex-row min-h-0">
+
+    <!-- ЛЕВАЯ ПАНЕЛЬ ПАРАМЕТРОВ -->
+    <aside class="w-full lg:w-[375px] xl:w-[400px] bg-slate-900/95 border-b lg:border-b-0 lg:border-r border-slate-800 flex flex-col shrink-0 lg:h-[calc(100vh-58px)]">
+      <div class="flex-1 overflow-y-auto p-4 space-y-4">
+
+        <!-- ===================== ПАНЕЛЬ РЕЖИМА 1: КРОЙ КОРОБКИ ===================== -->
+        <div id="boxControlsPanel" class="space-y-4">
+          <!-- 1. ГАБАРИТЫ КОРОБКИ -->
+          <section class="bg-slate-850 border border-slate-800 rounded-xl p-3.5 space-y-3">
+            <div class="flex items-center justify-between">
+              <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+                <span class="w-1.5 h-4 rounded-full bg-cyan-500"></span>
+                1. Габариты коробки (мм)
+              </h2>
+              <span class="text-[11px] font-mono text-slate-400">L × W × H</span>
+            </div>
+
+            <div class="grid grid-cols-3 gap-2">
+              <div>
+                <label for="inputL" class="block text-[11px] text-slate-400 mb-1">Длина L (глубина)</label>
+                <input id="inputL" type="number" min="25" max="600" step="0.5" value="90" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-2 text-sm font-mono text-white focus:outline-none focus:border-cyan-500 transition" />
+              </div>
+              <div>
+                <label for="inputW" class="block text-[11px] text-slate-400 mb-1">Ширина W (фасад)</label>
+                <input id="inputW" type="number" min="25" max="600" step="0.5" value="90" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-2 text-sm font-mono text-white focus:outline-none focus:border-cyan-500 transition" />
+              </div>
+              <div>
+                <label for="inputH" class="block text-[11px] text-slate-400 mb-1">Высота H</label>
+                <input id="inputH" type="number" min="30" max="900" step="0.5" value="297" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-2 text-sm font-mono text-white focus:outline-none focus:border-cyan-500 transition" />
+              </div>
+            </div>
+
+            <!-- Быстрые пресеты -->
+            <div>
+              <span class="block text-[11px] text-slate-400 mb-1.5">Быстрые тестовые размеры:</span>
+              <div class="flex flex-wrap gap-1.5">
+                <button type="button" data-l="90" data-w="90" data-h="297" class="preset-btn px-2.5 py-1 rounded-md bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/40 text-[11px] font-mono text-cyan-200 font-semibold transition cursor-pointer">90×90×297 (Эталон)</button>
+                <button type="button" data-l="60" data-w="60" data-h="140" class="preset-btn px-2.5 py-1 rounded-md bg-slate-900 hover:bg-slate-800 border border-slate-700 text-[11px] font-mono text-slate-300 transition cursor-pointer">60×60×140</button>
+                <button type="button" data-l="50" data-w="50" data-h="110" class="preset-btn px-2.5 py-1 rounded-md bg-slate-900 hover:bg-slate-800 border border-slate-700 text-[11px] font-mono text-slate-300 transition cursor-pointer">50×50×110</button>
+                <button type="button" data-l="80" data-w="50" data-h="160" class="preset-btn px-2.5 py-1 rounded-md bg-slate-900 hover:bg-slate-800 border border-slate-700 text-[11px] font-mono text-slate-300 transition cursor-pointer">80×50×160</button>
+              </div>
+            </div>
+          </section>
+
+          <!-- 2. ПРИПУСК И КЛАПАНЫ -->
+          <section class="bg-slate-850 border border-slate-800 rounded-xl p-3.5 space-y-3">
+            <div class="flex items-center justify-between">
+              <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+                <span class="w-1.5 h-4 rounded-full bg-emerald-500"></span>
+                2. Припуск и клапаны
+              </h2>
+              <span class="text-[11px] font-mono text-emerald-400">Бристоль 350 г/м²</span>
+            </div>
+
+            <div class="grid grid-cols-3 gap-2">
+              <div>
+                <label for="inputD" class="block text-[11px] text-slate-400 mb-1">Припуск d (мм)</label>
+                <input id="inputD" type="number" min="0" max="5" step="0.1" value="0.5" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-2 text-sm font-mono text-white focus:outline-none focus:border-emerald-500 transition" />
+              </div>
+              <div>
+                <label for="inputGlueW" class="block text-[11px] text-slate-400 mb-1">Клеевой (мм)</label>
+                <input id="inputGlueW" type="number" min="8" max="40" step="0.5" value="15" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-2 text-sm font-mono text-white focus:outline-none focus:border-emerald-500 transition" />
+              </div>
+              <div>
+                <label for="inputTuckH" class="block text-[11px] text-slate-400 mb-1">Язычок (мм)</label>
+                <input id="inputTuckH" type="number" min="8" max="40" step="0.5" value="15" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-2 text-sm font-mono text-white focus:outline-none focus:border-emerald-500 transition" />
+              </div>
+            </div>
+
+            <div class="pt-1 space-y-2 border-t border-slate-800/80">
+              <label class="flex items-center justify-between gap-2 text-xs text-slate-300 cursor-pointer select-none">
+                <span>Насечки под клей на боковом клапане</span>
+                <input id="chkGlueNotches" type="checkbox" checked class="w-4 h-4 rounded bg-slate-900 border-slate-600 text-cyan-500 focus:ring-0 cursor-pointer" />
+              </label>
+              <label class="flex items-center justify-between gap-2 text-xs text-slate-300 cursor-pointer select-none">
+                <span>Показывать габаритные размеры на чертеже</span>
+                <input id="chkShowDims" type="checkbox" checked class="w-4 h-4 rounded bg-slate-900 border-slate-600 text-cyan-500 focus:ring-0 cursor-pointer" />
+              </label>
+            </div>
+          </section>
+
+          <!-- 3. ГАБАРИТЫ РАЗВЁРТКИ И БЫСТРЫЙ ПЕРЕХОД К РАСКЛАДКЕ -->
+          <section class="bg-slate-850 border border-slate-800 rounded-xl p-3.5 space-y-3">
+            <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+              <span class="w-1.5 h-4 rounded-full bg-amber-400"></span>
+              3. Параметры заготовки и раскладка
+            </h2>
+
+            <div class="grid grid-cols-2 gap-2">
+              <div class="bg-slate-900/90 border border-slate-800 rounded-lg p-2.5">
+                <div class="text-[10px] uppercase tracking-wider text-slate-400">Размер развёртки</div>
+                <div id="statBlankSize" class="text-sm font-bold font-mono text-white mt-0.5">—</div>
+              </div>
+              <div class="bg-slate-900/90 border border-slate-800 rounded-lg p-2.5">
+                <div class="text-[10px] uppercase tracking-wider text-slate-400">Площадь габарита</div>
+                <div id="statBlankArea" class="text-sm font-bold font-mono text-cyan-400 mt-0.5">—</div>
+              </div>
+            </div>
+
+            <!-- Главная кнопка перехода к экономной раскладке на листы -->
+            <button id="btnGoToSheetNesting" type="button" class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 active:scale-[0.99] text-slate-950 font-bold text-xs sm:text-sm shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 transition cursor-pointer">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <line x1="3" y1="9" x2="21" y2="9" />
+                <line x1="9" y1="21" x2="9" y2="9" />
+              </svg>
+              <span>Разложить коробку на листы</span>
+            </button>
+
+            <div id="panelSummaryText" class="text-[11px] font-mono text-slate-400 bg-slate-900/60 border border-slate-800/80 rounded-lg p-2.5 leading-relaxed">
+              —
+            </div>
+          </section>
+        </div>
+
+        <!-- ===================== ПАНЕЛЬ РЕЖИМА 2: РАСКЛАДКА НА ЛИСТЫ ===================== -->
+        <div id="sheetControlsPanel" class="space-y-4 hidden">
+
+          <!-- Текущая коробка (компактная сводка + кнопка возврата) -->
+          <div class="bg-slate-850 border border-cyan-500/30 rounded-xl p-3 flex items-center justify-between gap-2">
+            <div>
+              <div class="text-[10px] uppercase tracking-wider text-cyan-400 font-semibold">Текущая развёртка A02</div>
+              <div id="sheetBoxSummary" class="text-xs font-mono text-white font-semibold mt-0.5">—</div>
+            </div>
+            <button id="btnBackToBox" type="button" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-[11px] font-medium transition cursor-pointer shrink-0">
+              ← Изменить
+            </button>
+          </div>
+
+          <!-- 1. ФОРМАТ ОФСЕТНОГО ЛИСТА -->
+          <section class="bg-slate-850 border border-slate-800 rounded-xl p-3.5 space-y-3">
+            <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+              <span class="w-1.5 h-4 rounded-full bg-cyan-500"></span>
+              1. Формат офсетного листа
+            </h2>
+
+            <div class="grid grid-cols-1 gap-2">
+              <button type="button" data-format="35x50" class="sheet-fmt-btn text-left px-3 py-2.5 rounded-xl border transition cursor-pointer bg-slate-900 border-slate-700 hover:border-cyan-500/50 flex items-center justify-between">
+                <div>
+                  <div class="text-xs font-bold font-mono text-white">Лист 35 × 50 см</div>
+                  <div class="text-[10px] font-mono text-slate-400">Печатная зона: 330 × 480 мм</div>
+                </div>
+                <span id="badgeCount35" class="px-2.5 py-1 rounded-lg font-mono text-xs font-bold bg-slate-800 text-slate-300">—</span>
+              </button>
+
+              <button type="button" data-format="50x70" class="sheet-fmt-btn text-left px-3 py-2.5 rounded-xl border transition cursor-pointer bg-cyan-500/15 border-cyan-500/60 flex items-center justify-between">
+                <div>
+                  <div class="text-xs font-bold font-mono text-white">Лист 50 × 70 см</div>
+                  <div class="text-[10px] font-mono text-slate-400">Печатная зона: 480 × 680 мм</div>
+                </div>
+                <span id="badgeCount50" class="px-2.5 py-1 rounded-lg font-mono text-xs font-bold bg-emerald-500/20 text-emerald-300">—</span>
+              </button>
+
+              <button type="button" data-format="custom" class="sheet-fmt-btn text-left px-3 py-2.5 rounded-xl border transition cursor-pointer bg-slate-900 border-slate-700 hover:border-cyan-500/50 flex items-center justify-between">
+                <div>
+                  <div class="text-xs font-bold font-mono text-white">Свой размер листа</div>
+                  <div id="customFmtSublabel" class="text-[10px] font-mono text-slate-400">Зона: 680 × 980 мм</div>
+                </div>
+                <span id="badgeCountCustom" class="px-2.5 py-1 rounded-lg font-mono text-xs font-bold bg-slate-800 text-slate-300">—</span>
+              </button>
+            </div>
+
+            <!-- Поля для своего формата -->
+            <div id="customFormatInputs" class="hidden pt-2 border-t border-slate-800 grid grid-cols-3 gap-2">
+              <div>
+                <label for="inputCustomW" class="block text-[10px] text-slate-400 mb-1">Лист Ш (мм)</label>
+                <input id="inputCustomW" type="number" min="100" max="1600" step="5" value="700" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs font-mono text-white focus:outline-none focus:border-cyan-500" />
+              </div>
+              <div>
+                <label for="inputCustomH" class="block text-[10px] text-slate-400 mb-1">Лист В (мм)</label>
+                <input id="inputCustomH" type="number" min="100" max="1600" step="5" value="1000" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs font-mono text-white focus:outline-none focus:border-cyan-500" />
+              </div>
+              <div>
+                <label for="inputCustomMargin" class="block text-[10px] text-slate-400 mb-1">Поля (мм)</label>
+                <input id="inputCustomMargin" type="number" min="0" max="50" step="1" value="10" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs font-mono text-white focus:outline-none focus:border-cyan-500" />
+              </div>
+            </div>
+          </section>
+
+          <!-- 2. НАСТРОЙКИ ЭКОНОМНОГО НЕСТИНГА -->
+          <section class="bg-slate-850 border border-slate-800 rounded-xl p-3.5 space-y-3">
+            <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+              <span class="w-1.5 h-4 rounded-full bg-emerald-500"></span>
+              2. Зазор и стратегия нестинга
+            </h2>
+
+            <div class="grid grid-cols-2 gap-2.5">
+              <div>
+                <label for="inputKnifeGap" class="block text-[11px] text-slate-400 mb-1">Зазор между ножами (мм)</label>
+                <input id="inputKnifeGap" type="number" min="0" max="20" step="0.5" value="3" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-2 text-sm font-mono text-white focus:outline-none focus:border-emerald-500" />
+                <div class="flex gap-1 mt-1.5">
+                  <button type="button" data-gap="0" class="gap-preset flex-1 py-0.5 rounded bg-slate-900 hover:bg-slate-800 border border-slate-700 text-[10px] font-mono text-slate-300 cursor-pointer">0</button>
+                  <button type="button" data-gap="2" class="gap-preset flex-1 py-0.5 rounded bg-slate-900 hover:bg-slate-800 border border-slate-700 text-[10px] font-mono text-slate-300 cursor-pointer">2</button>
+                  <button type="button" data-gap="3" class="gap-preset flex-1 py-0.5 rounded bg-emerald-500/15 border border-emerald-500/40 text-[10px] font-mono text-emerald-300 cursor-pointer">3</button>
+                  <button type="button" data-gap="4" class="gap-preset flex-1 py-0.5 rounded bg-slate-900 hover:bg-slate-800 border border-slate-700 text-[10px] font-mono text-slate-300 cursor-pointer">4</button>
+                </div>
+              </div>
+
+              <div>
+                <label for="selectNestStrategy" class="block text-[11px] text-slate-400 mb-1">Укладка на листе</label>
+                <select id="selectNestStrategy" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 cursor-pointer">
+                  <option value="max_auto" selected>Максимум (0°/90°/180°/270°)</option>
+                  <option value="valet_axis">Валетом по 1 оси (долевая)</option>
+                  <option value="no_flip">Без переворота (0° / 90°)</option>
+                </select>
+                <p class="text-[10px] text-slate-400 mt-1.5 leading-tight">
+                  Клапаны и крышки входят друг в друга с сохранением зазора.
+                </p>
+              </div>
+            </div>
+
+            <button id="btnRecalcNesting" type="button" class="w-full py-2 px-3 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/40 text-cyan-200 font-semibold text-xs flex items-center justify-center gap-2 transition cursor-pointer">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <polyline points="23 4 23 10 17 10" />
+                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+              </svg>
+              <span>Пересчитать раскладку</span>
+            </button>
+          </section>
+
+          <!-- 3. РАСЧЁТ ТИРАЖА И ЭКОНОМИИ -->
+          <section class="bg-slate-850 border border-slate-800 rounded-xl p-3.5 space-y-3">
+            <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+              <span class="w-1.5 h-4 rounded-full bg-amber-400"></span>
+              3. Тираж и экономика листа
+            </h2>
+
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label for="inputOrderQty" class="block text-[10px] text-slate-400 mb-1">Тираж коробок (шт)</label>
+                <input id="inputOrderQty" type="number" min="1" max="10000000" step="100" value="1000" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-mono text-white focus:outline-none focus:border-amber-400" />
+              </div>
+              <div>
+                <label for="inputMakeready" class="block text-[10px] text-slate-400 mb-1">Приладка (листов)</label>
+                <input id="inputMakeready" type="number" min="0" max="5000" step="10" value="150" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-mono text-white focus:outline-none focus:border-amber-400" />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+              <div class="bg-slate-900/90 border border-slate-800 rounded-lg p-2.5">
+                <div class="text-[10px] uppercase tracking-wider text-slate-400">Коробок на листе</div>
+                <div id="kpiSheetCount" class="text-lg font-bold font-mono text-emerald-400 mt-0.5">—</div>
+                <div id="kpiGainText" class="text-[10px] font-mono text-cyan-300 mt-0.5">—</div>
+              </div>
+              <div class="bg-slate-900/90 border border-slate-800 rounded-lg p-2.5">
+                <div class="text-[10px] uppercase tracking-wider text-slate-400">Листов брутто</div>
+                <div id="kpiGrossSheets" class="text-lg font-bold font-mono text-amber-300 mt-0.5">—</div>
+                <div id="kpiNetSheets" class="text-[10px] font-mono text-slate-400 mt-0.5">—</div>
+              </div>
+            </div>
+
+            <div id="sheetNestDetails" class="text-[11px] font-mono text-slate-400 bg-slate-900/60 border border-slate-800/80 rounded-lg p-2.5 leading-relaxed">
+              —
+            </div>
+          </section>
+        </div>
+
+      </div>
+    </aside>
+
+    <!-- ПРАВАЯ ОБЛАСТЬ: ИНТЕРАКТИВНЫЙ ЧЕРТЁЖ -->
+    <main class="flex-1 flex flex-col min-w-0 lg:h-[calc(100vh-58px)] overflow-hidden">
+
+      <!-- ПАНЕЛЬ ИНСТРУМЕНТОВ ЧЕРТЕЖА -->
+      <div class="px-4 py-2 bg-slate-900 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs shrink-0">
+        <div class="flex flex-wrap items-center gap-4 text-[11px] text-slate-300">
+          <span class="flex items-center gap-1.5">
+            <span class="w-4 h-0.5 bg-red-500 inline-block"></span>
+            Рез (<span class="font-mono text-red-400">#FF0000</span>)
+          </span>
+          <span class="flex items-center gap-1.5">
+            <span class="w-4 h-0.5 border-t-2 border-dashed border-blue-500 inline-block"></span>
+            Биговка (<span class="font-mono text-blue-400">#0000FF</span>)
+          </span>
+          <span id="legendValet" class="hidden items-center gap-1.5">
+            <span class="w-3 h-3 rounded-sm bg-emerald-500/25 border border-emerald-400/50 inline-block"></span>
+            Валет (180°/270°)
+          </span>
+        </div>
+
+        <div class="flex items-center gap-1.5">
+          <button id="btnZoomOut" type="button" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 cursor-pointer" title="Уменьшить">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12" /></svg>
+          </button>
+          <span id="zoomLabel" class="font-mono text-xs text-slate-300 w-12 text-center">100%</span>
+          <button id="btnZoomIn" type="button" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 cursor-pointer" title="Увеличить">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+          </button>
+          <button id="btnFit" type="button" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-medium cursor-pointer">
+            Вписать
+          </button>
+        </div>
+      </div>
+
+      <!-- ИНТЕРАКТИВНЫЙ ХОЛСТ -->
+      <div id="viewport" class="flex-1 blueprint-grid relative overflow-hidden flex items-center justify-center cursor-grab active:cursor-grabbing select-none min-h-[420px]">
+        <div id="panZoomWrap" class="origin-center will-change-transform">
+          <svg id="previewSvg" xmlns="http://www.w3.org/2000/svg" class="block"></svg>
+        </div>
+
+        <div class="absolute bottom-3 left-3 px-2.5 py-1 rounded-md bg-slate-900/85 border border-slate-800 text-[10px] font-mono text-slate-400 pointer-events-none">
+          Колесо мыши: масштаб • Перетаскивание: сдвиг чертежа
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ВСПЛЫВАЮЩЕЕ УВЕДОМЛЕНИЕ -->
+  <div id="toast" class="fixed bottom-4 right-4 z-50 px-4 py-2.5 rounded-xl bg-slate-900 border border-cyan-500/50 text-cyan-200 text-xs font-medium shadow-2xl opacity-0 pointer-events-none transition-opacity duration-200"></div>
+
+  <script>
+    // =========================================================================
+    // СОСТОЯНИЕ ПАРАМЕТРОВ КОРОБКИ CODE A02 И ОФСЕТНОЙ РАСКЛАДКИ
+    // =========================================================================
+    const state = {
+      // Режим интерфейса: 'box' (крой 1 шт.) | 'sheet' (раскладка на лист)
+      viewMode: 'box',
+
+      // Геометрия коробки A02
+      L: 90,
+      W: 90,
+      H: 297,
+      d: 0.5,
+      glueW: 15,
+      tuckH: 15,
+      glueNotches: true,
+      showDims: true,
+
+      // Параметры раскладки на офсетные листы
+      sheetFormat: '50x70',     // '35x50' | '50x70' | 'custom'
+      customSheetW: 700,
+      customSheetH: 1000,
+      customMargin: 10,
+      knifeGap: 3,              // Зазор между ножами (мм)
+      nestStrategy: 'max_auto', // 'max_auto' | 'valet_axis' | 'no_flip'
+      orderQty: 1000,
+      makeready: 150,
+
+      // Кэш последнего расчёта нестинга по форматам
+      nestResults: {
+        '35x50': null,
+        '50x70': null,
+        'custom': null
+      },
+
+      // Зум / Пан
+      zoom: 1,
+      panX: 0,
+      panY: 0
+    };
+
+    function f(num) {
+      return Number(num.toFixed(3));
+    }
+
+    let toastTimer = null;
+    function showToast(msg) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.classList.remove('opacity-0');
+      el.classList.add('opacity-100');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        el.classList.remove('opacity-100');
+        el.classList.add('opacity-0');
+      }, 2500);
+    }
+
+    function getSheetSpec(fmtId) {
+      if (fmtId === '35x50') {
+        return { id: '35x50', name: '35×50 см', sheetW: 350, sheetH: 500, workW: 330, workH: 480, marginX: 10, marginY: 10 };
+      }
+      if (fmtId === '50x70') {
+        return { id: '50x70', name: '50×70 см', sheetW: 500, sheetH: 700, workW: 480, workH: 680, marginX: 10, marginY: 10 };
+      }
+      const sw = Math.max(100, Math.min(2000, Number(state.customSheetW) || 700));
+      const sh = Math.max(100, Math.min(2000, Number(state.customSheetH) || 1000));
+      const mg = Math.max(0, Math.min(Math.min(sw, sh) * 0.25, Number(state.customMargin) || 0));
+      return {
+        id: 'custom',
+        name: `${f(sw / 10)}×${f(sh / 10)} см`,
+        sheetW: sw,
+        sheetH: sh,
+        workW: Math.max(20, sw - mg * 2),
+        workH: Math.max(20, sh - mg * 2),
+        marginX: mg,
+        marginY: mg
+      };
+    }
+
+    /**
+     * Точное скругление угла по касательной (истинная дуга окружности SVG).
+     */
+    function filletCorner(pPrev, pCorner, pNext, radius) {
+      const v1x = pPrev.x - pCorner.x;
+      const v1y = pPrev.y - pCorner.y;
+      const len1 = Math.hypot(v1x, v1y);
+
+      const v2x = pNext.x - pCorner.x;
+      const v2y = pNext.y - pCorner.y;
+      const len2 = Math.hypot(v2x, v2y);
+
+      if (len1 < 1e-6 || len2 < 1e-6 || radius <= 1e-6) {
+        return { svg: `L ${f(pCorner.x)} ${f(pCorner.y)}` };
+      }
+
+      const u1x = v1x / len1;
+      const u1y = v1y / len1;
+      const u2x = v2x / len2;
+      const u2y = v2y / len2;
+
+      const dot = Math.max(-1, Math.min(1, u1x * u2x + u1y * u2y));
+      const theta = Math.acos(dot);
+
+      if (theta < 1e-4 || Math.abs(Math.PI - theta) < 1e-4) {
+        return { svg: `L ${f(pCorner.x)} ${f(pCorner.y)}` };
+      }
+
+      const tanHalf = Math.tan(theta / 2);
+      const maxT = Math.min(len1 * 0.48, len2 * 0.48);
+      const tDist = Math.min(radius / tanHalf, maxT);
+      const actualR = tDist * tanHalf;
+
+      const t1 = { x: pCorner.x + u1x * tDist, y: pCorner.y + u1y * tDist };
+      const t2 = { x: pCorner.x + u2x * tDist, y: pCorner.y + u2y * tDist };
+
+      const cross = (-u1x) * u2y - (-u1y) * u2x;
+      const sweep = cross > 0 ? 1 : 0;
+
+      return {
+        t1, t2, r: actualR, sweep,
+        svg: `L ${f(t1.x)} ${f(t1.y)} A ${f(actualR)} ${f(actualR)} 0 0 ${sweep} ${f(t2.x)} ${f(t2.y)}`
+      };
+    }
+
+    // =========================================================================
+    // РАСЧЁТ ПАРАМЕТРИЧЕСКОЙ ГЕОМЕТРИИ РАЗВЁРТКИ CODE A02
+    // =========================================================================
+    function calculateGeometry() {
+      const L = Math.max(25, Math.min(600, Number(state.L) || 90));
+      const W = Math.max(25, Math.min(600, Number(state.W) || 90));
+      const H = Math.max(30, Math.min(900, Number(state.H) || 297));
+      const d = Math.max(0, Math.min(5, Number(state.d) || 0));
+      const glueW = Math.max(8, Math.min(40, Number(state.glueW) || 15));
+      const tuckH = Math.max(8, Math.min(40, Number(state.tuckH) || 15));
+
+      const p1W = W;
+      const p2W = L;
+      const p3W = W;
+      const p4W = Math.max(10, L - d);
+
+      const x0 = 0;
+      const x1 = glueW;
+      const x2 = x1 + p1W;
+      const x3 = x2 + p2W;
+      const x4 = x3 + p3W;
+      const x5 = x4 + p4W;
+
+      const yTuckTop = 0;
+      const yLidCrease = tuckH;
+      const earUp = 1.0;
+      const yEarTop = yLidCrease - earUp;
+      const yTop1 = yLidCrease + L;
+      const yTopSide = yTop1 + d;
+      const yBot = yTopSide + H;
+
+      const tuckOffset = 0.5;
+      const earW = Math.min(Math.max(4, W * 0.055), 8);
+      const tuckInset = Math.min(tuckH * 0.65, W * 0.14);
+
+      const dustH = Math.max(10, W / 2 - d - 3);
+      const yDustTop = yTopSide - dustH;
+      const dustInnerOffset = 0.5;
+
+      const bot1H = Math.max(25, L * 0.83);
+      const bot2H = Math.max(18, W * 0.46);
+      const bot3H = Math.max(22, L * 0.68);
+      const innerGap = 3.0;
+
+      const tongueW = Math.max(12, W * 0.48);
+      const cx3 = (x3 + x4) / 2;
+      const tLeft = cx3 - tongueW / 2;
+      const tRight = cx3 + tongueW / 2;
+      const shoulderY = yBot + L * 0.48;
+      const tBotY = yBot + bot3H;
+      const r3 = Math.min(5.0, tongueW * 0.25, Math.max(1, (tBotY - shoulderY) * 0.45));
+
+      const cx1 = (x1 + x2) / 2;
+      const winTopY = yBot + bot1H * 0.60;
+      const winBotY = yBot + bot1H * 0.85;
+      const winH = winBotY - winTopY;
+      const winTopW = tongueW + 1.0;
+      const winBotW = Math.max(8, winTopW - winH * 0.24);
+
+      const chamfer1 = 1.5;
+      const taperY = yBot + bot1H * 0.56;
+      const taperIn = Math.min(W * 0.08, 9);
+
+      const glueChamfer = Math.min(glueW * 0.35, 6.0);
+
+      const outer = [];
+      outer.push(`M ${f(x1)} ${f(yTopSide)}`);
+      outer.push(`L ${f(x1)} ${f(yEarTop)}`);
+      outer.push(`L ${f(x1 + tuckOffset)} ${f(yEarTop)}`);
+      outer.push(`Q ${f(x1 + tuckOffset)} ${f(yTuckTop)} ${f(x1 + tuckOffset + tuckInset)} ${f(yTuckTop)}`);
+      outer.push(`L ${f(x2 - tuckOffset - tuckInset)} ${f(yTuckTop)}`);
+      outer.push(`Q ${f(x2 - tuckOffset)} ${f(yTuckTop)} ${f(x2 - tuckOffset)} ${f(yEarTop)}`);
+      outer.push(`L ${f(x2)} ${f(yEarTop)}`);
+      outer.push(`L ${f(x2)} ${f(yTopSide)}`);
+
+      outer.push(`L ${f(x2 + 3.5)} ${f(yTopSide - 2.8)}`);
+      outer.push(`L ${f(x2 + 3.5 + (dustH - 2.8) * 0.08)} ${f(yDustTop)}`);
+      outer.push(`L ${f(x3 - 3.0 - (dustH - 5.0) * 0.25)} ${f(yDustTop)}`);
+      outer.push(`L ${f(x3 - 3.0)} ${f(yTopSide - 5.0)}`);
+      outer.push(`L ${f(x3 - dustInnerOffset)} ${f(yTopSide - 2.5)}`);
+      outer.push(`L ${f(x3 - dustInnerOffset)} ${f(yTopSide)}`);
+
+      outer.push(`L ${f(x4 + dustInnerOffset)} ${f(yTopSide)}`);
+
+      outer.push(`L ${f(x4 + dustInnerOffset)} ${f(yTopSide - 2.5)}`);
+      outer.push(`L ${f(x4 + 3.0)} ${f(yTopSide - 5.0)}`);
+      outer.push(`L ${f(x4 + 3.0 + (dustH - 5.0) * 0.25)} ${f(yDustTop)}`);
+      outer.push(`L ${f(x5 - 3.5 - (dustH - 2.8) * 0.08)} ${f(yDustTop)}`);
+      outer.push(`L ${f(x5 - 3.5)} ${f(yTopSide - 2.8)}`);
+      outer.push(`L ${f(x5)} ${f(yTopSide)}`);
+
+      outer.push(`L ${f(x5)} ${f(yBot)}`);
+
+      const wingDiag4 = Math.min(p4W * 0.14, bot2H * 0.35);
+      const notchP4 = { x: x5 - p4W * 0.50, y: yBot + bot2H * 0.58 };
+      const cornerP4 = { x: x5 - p4W * 0.42, y: yBot + bot2H };
+      const endBotP4 = { x: x4 + innerGap, y: yBot + bot2H };
+      const f4 = filletCorner(notchP4, cornerP4, endBotP4, 6.0);
+
+      outer.push(`L ${f(x5 - wingDiag4)} ${f(yBot + wingDiag4)}`);
+      outer.push(`L ${f(notchP4.x)} ${f(notchP4.y)}`);
+      outer.push(f4.svg);
+      outer.push(`L ${f(endBotP4.x)} ${f(endBotP4.y)}`);
+      outer.push(`L ${f(x4 + innerGap)} ${f(yBot + innerGap)}`);
+      outer.push(`L ${f(x4)} ${f(yBot)}`);
+
+      const p3TR = { x: tRight, y: shoulderY };
+      const p3BR = { x: tRight, y: tBotY };
+      const p3BL = { x: tLeft, y: tBotY };
+      const p3TL = { x: tLeft, y: shoulderY };
+      const f3R = filletCorner(p3TR, p3BR, p3BL, r3);
+      const f3L = filletCorner(p3BR, p3BL, p3TL, r3);
+
+      outer.push(`L ${f(p3TR.x)} ${f(p3TR.y)}`);
+      outer.push(f3R.svg);
+      outer.push(f3L.svg);
+      outer.push(`L ${f(p3TL.x)} ${f(p3TL.y)}`);
+      outer.push(`L ${f(x3)} ${f(yBot)}`);
+
+      const wingDiag2 = Math.min(p2W * 0.14, bot2H * 0.35);
+      const startBotP2 = { x: x3 - innerGap, y: yBot + bot2H };
+      const cornerP2 = { x: x2 + p2W * 0.42, y: yBot + bot2H };
+      const notchP2 = { x: x2 + p2W * 0.50, y: yBot + bot2H * 0.58 };
+      const f2 = filletCorner(startBotP2, cornerP2, notchP2, 6.0);
+
+      outer.push(`L ${f(x3 - innerGap)} ${f(yBot + innerGap)}`);
+      outer.push(`L ${f(startBotP2.x)} ${f(startBotP2.y)}`);
+      outer.push(f2.svg);
+      outer.push(`L ${f(notchP2.x)} ${f(notchP2.y)}`);
+      outer.push(`L ${f(x2 + wingDiag2)} ${f(yBot + wingDiag2)}`);
+      outer.push(`L ${f(x2)} ${f(yBot)}`);
+
+      outer.push(`L ${f(x2 - chamfer1)} ${f(yBot + chamfer1)}`);
+      outer.push(`L ${f(x2 - chamfer1)} ${f(taperY)}`);
+      outer.push(`L ${f(x2 - taperIn)} ${f(yBot + bot1H)}`);
+      outer.push(`L ${f(x1 + taperIn)} ${f(yBot + bot1H)}`);
+      outer.push(`L ${f(x1 + chamfer1)} ${f(taperY)}`);
+      outer.push(`L ${f(x1 + chamfer1)} ${f(yBot + chamfer1)}`);
+      outer.push(`L ${f(x1)} ${f(yBot)}`);
+
+      outer.push(`L ${f(x0)} ${f(yBot - glueChamfer)}`);
+      outer.push(`L ${f(x0)} ${f(yTopSide + glueChamfer)}`);
+      outer.push(`Z`);
+
+      const innerCuts = [];
+      innerCuts.push(
+        `M ${f(cx1 - winTopW / 2)} ${f(winTopY)} ` +
+        `L ${f(cx1 + winTopW / 2)} ${f(winTopY)} ` +
+        `L ${f(cx1 + winBotW / 2)} ${f(winBotY)} ` +
+        `L ${f(cx1 - winBotW / 2)} ${f(winBotY)} Z`
+      );
+      innerCuts.push(
+        `M ${f(x1 + tuckOffset)} ${f(yEarTop)} ` +
+        `L ${f(x1 + earW)} ${f(yEarTop)} ` +
+        `L ${f(x1 + earW)} ${f(yLidCrease + 1.0)}`
+      );
+      innerCuts.push(
+        `M ${f(x2 - tuckOffset)} ${f(yEarTop)} ` +
+        `L ${f(x2 - earW)} ${f(yEarTop)} ` +
+        `L ${f(x2 - earW)} ${f(yLidCrease + 1.0)}`
+      );
+
+      const glueNotchLines = [];
+      if (state.glueNotches) {
+        const notchStep = 8.0;
+        const nStart = yTopSide + glueChamfer + 5;
+        const nEnd = yBot - glueChamfer - 5;
+        const nx1 = x1 - Math.min(glueW * 0.25, 4.0);
+        const nx2 = x1 - Math.min(glueW * 0.65, 9.5);
+        for (let ny = nStart; ny <= nEnd; ny += notchStep) {
+          glueNotchLines.push({ x1: nx1, y1: ny, x2: nx2, y2: ny + 2.2 });
+        }
+      }
+
+      const creases = [
+        { x1: x1, y1: yTopSide, x2: x1, y2: yBot },
+        { x1: x2, y1: yTop1, x2: x2, y2: yBot },
+        { x1: x3, y1: yTopSide, x2: x3, y2: yBot },
+        { x1: x4, y1: yTopSide, x2: x4, y2: yBot },
+        { x1: x1 + earW, y1: yLidCrease, x2: x2 - earW, y2: yLidCrease },
+        { x1: x1, y1: yTop1, x2: x2, y2: yTop1 },
+        { x1: x2, y1: yTopSide, x2: x3 - dustInnerOffset, y2: yTopSide },
+        { x1: x4 + dustInnerOffset, y1: yTopSide, x2: x5, y2: yTopSide },
+        { x1: x1, y1: yBot, x2: x5, y2: yBot }
+      ];
+
+      const totalW = x5;
+      const totalH = yBot + Math.max(bot1H, bot2H, bot3H);
+
+      return {
+        L, W, H, d, glueW, tuckH,
+        p1W, p2W, p3W, p4W,
+        x0, x1, x2, x3, x4, x5,
+        yTuckTop, yLidCrease, yTop1, yTopSide, yBot, yDustTop,
+        bot1H, bot2H, bot3H, dustH, tongueW, winTopW,
+        totalW, totalH,
+        outerPath: outer.join(' '),
+        innerCuts,
+        glueNotchLines,
+        creases
+      };
+    }
+
+    // =========================================================================
+    // ДВИЖОК ЭКОНОМНОГО ПОЛИГОНАЛЬНОГО НЕСТИНГА КОРОБОК (BITMASK INTERLOCKING)
+    // =========================================================================
+
+    /**
+     * Растеризация точного контура коробки в битовую маску Uint32Array с расширением на gap/2.
+     * Возвращает маску, её реальную площадь (мм²) и габариты после поворота.
+     */
+    function buildBoxBitmask(g, angle, gapMm, res) {
+      const rotW = (angle === 90 || angle === 270) ? g.totalH : g.totalW;
+      const rotH = (angle === 90 || angle === 270) ? g.totalW : g.totalH;
+      const halfGap = gapMm * 0.5;
+
+      const maskW = Math.ceil((rotW + gapMm) * res);
+      const maskH = Math.ceil((rotH + gapMm) * res);
+
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, maskW);
+      canvas.height = Math.max(1, maskH);
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+      const path2d = new Path2D(g.outerPath);
+
+      // 1. Сначала измерим реальную площадь чистого контура (только для angle === 0)
+      let realAreaMm2 = 0;
+      if (angle === 0) {
+        ctx.save();
+        ctx.scale(res, res);
+        ctx.fillStyle = '#ffffff';
+        ctx.fill(path2d);
+        ctx.restore();
+        const rawData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+        let pxCount = 0;
+        for (let i = 3; i < rawData.length; i += 4) {
+          if (rawData[i] > 127) pxCount++;
+        }
+        realAreaMm2 = pxCount / (res * res);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+
+      // 2. Рисуем повёрнутый контур со сдвигом на halfGap и обводкой толщиной gapMm (рубашка безопасности)
+      ctx.save();
+      ctx.scale(res, res);
+      ctx.translate(halfGap, halfGap);
+      if (angle === 180) {
+        ctx.translate(g.totalW, g.totalH);
+        ctx.rotate(Math.PI);
+      } else if (angle === 90) {
+        ctx.translate(g.totalH, 0);
+        ctx.rotate(Math.PI / 2);
+      } else if (angle === 270) {
+        ctx.translate(0, g.totalW);
+        ctx.rotate(-Math.PI / 2);
+      }
+
+      ctx.fillStyle = '#ffffff';
+      ctx.fill(path2d);
+
+      if (gapMm > 0.01) {
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = gapMm;
+        ctx.lineJoin = 'round';
+        ctx.lineCap = 'round';
+        ctx.stroke(path2d);
+      }
+      ctx.restore();
+
+      const imgData = ctx.getImageData(0, 0, maskW, maskH).data;
+      const wordsPerRow = Math.ceil(maskW / 32);
+      const rows = new Array(maskH);
+      const nonEmptyRows = [];
+
+      for (let y = 0; y < maskH; y++) {
+        const rowArr = new Uint32Array(wordsPerRow);
+        let hasBits = false;
+        const rowOff = y * maskW * 4;
+        for (let x = 0; x < maskW; x++) {
+          if (imgData[rowOff + x * 4 + 3] > 64) {
+            rowArr[x >>> 5] |= (1 << (x & 31));
+            hasBits = true;
+          }
+        }
+        rows[y] = rowArr;
+        if (hasBits) nonEmptyRows.push(y);
+      }
+
+      // Для ускорения отсечения коллизий проверяем сначала середину, края и затем остальные строки
+      const checkOrder = [];
+      if (nonEmptyRows.length > 0) {
+        const mid = nonEmptyRows[Math.floor(nonEmptyRows.length / 2)];
+        const q1 = nonEmptyRows[Math.floor(nonEmptyRows.length / 4)];
+        const q3 = nonEmptyRows[Math.floor((nonEmptyRows.length * 3) / 4)];
+        const first = nonEmptyRows[0];
+        const last = nonEmptyRows[nonEmptyRows.length - 1];
+        const priority = new Set([mid, q1, q3, first, last]);
+        priority.forEach(r => checkOrder.push(r));
+        for (let i = 0; i < nonEmptyRows.length; i++) {
+          if (!priority.has(nonEmptyRows[i])) checkOrder.push(nonEmptyRows[i]);
+        }
+      }
+
+      return {
+        angle,
+        rotW,
+        rotH,
+        maskW,
+        maskH,
+        wordsPerRow,
+        rows,
+        nonEmptyRows,
+        checkOrder,
+        realAreaMm2
+      };
+    }
+
+    /**
+     * Быстрая битовая проверка коллизии маски `m` на битовой сетке листа `board` в позиции `(gx, gy)`.
+     */
+    function collidesBitmask(board, boardWords, m, gx, gy) {
+      const wordOffset = gx >>> 5;
+      const bitShift = gx & 31;
+      const invShift = 32 - bitShift;
+      const mWords = m.wordsPerRow;
+      const checkOrder = m.checkOrder;
+      const rows = m.rows;
+
+      if (bitShift === 0) {
+        for (let k = 0; k < checkOrder.length; k++) {
+          const my = checkOrder[k];
+          const bRowOff = (gy + my) * boardWords + wordOffset;
+          const mRow = rows[my];
+          for (let w = 0; w < mWords; w++) {
+            if ((board[bRowOff + w] & mRow[w]) !== 0) return true;
+          }
+        }
+      } else {
+        for (let k = 0; k < checkOrder.length; k++) {
+          const my = checkOrder[k];
+          const bRowOff = (gy + my) * boardWords + wordOffset;
+          const mRow = rows[my];
+          for (let w = 0; w < mWords; w++) {
+            const bits = mRow[w];
+            if (bits === 0) continue;
+            if ((board[bRowOff + w] & (bits << bitShift)) !== 0) return true;
+            if ((board[bRowOff + w + 1] & (bits >>> invShift)) !== 0) return true;
+          }
+        }
+      }
+      return false;
+    }
+
+    /**
+     * Впечатывание маски `m` в битовую сетку листа `board` в позиции `(gx, gy)`.
+     */
+    function stampBitmask(board, boardWords, m, gx, gy) {
+      const wordOffset = gx >>> 5;
+      const bitShift = gx & 31;
+      const invShift = 32 - bitShift;
+      const mWords = m.wordsPerRow;
+      const nonEmpty = m.nonEmptyRows;
+      const rows = m.rows;
+
+      if (bitShift === 0) {
+        for (let k = 0; k < nonEmpty.length; k++) {
+          const my = nonEmpty[k];
+          const bRowOff = (gy + my) * boardWords + wordOffset;
+          const mRow = rows[my];
+          for (let w = 0; w < mWords; w++) {
+            board[bRowOff + w] |= mRow[w];
+          }
+        }
+      } else {
+        for (let k = 0; k < nonEmpty.length; k++) {
+          const my = nonEmpty[k];
+          const bRowOff = (gy + my) * boardWords + wordOffset;
+          const mRow = rows[my];
+          for (let w = 0; w < mWords; w++) {
+            const bits = mRow[w];
+            if (bits === 0) continue;
+            board[bRowOff + w] |= (bits << bitShift);
+            board[bRowOff + w + 1] |= (bits >>> invShift);
+          }
+        }
+      }
+    }
+
+    /**
+     * Один прогон жадного вложения с заданным порядком сканирования и набором допустимых углов.
+     * scanMode: 'row' (сверху-вниз, слева-направо) | 'col' (слева-направо, сверху-вниз)
+     * alternatePref: если true — чередует индекс угла для плотного «валета» (0° -> 180° -> 0°...)
+     */
+    function runGreedyNestPass(workW, workH, gapMm, res, masks, scanMode, alternatePref) {
+      const boardW = Math.ceil((workW + gapMm) * res) + 2;
+      const boardH = Math.ceil((workH + gapMm) * res) + 2;
+      const boardWords = Math.ceil(boardW / 32) + 1;
+      const board = new Uint32Array(boardH * boardWords);
+
+      // Пределы размещения (верхний левый угол реального габарита коробки внутри 0..workW, 0..workH)
+      const maskBounds = masks.map(m => ({
+        m,
+        maxGx: Math.floor((workW - m.rotW) * res + 1e-6),
+        maxGy: Math.floor((workH - m.rotH) * res + 1e-6)
+      })).filter(b => b.maxGx >= 0 && b.maxGy >= 0);
+
+      if (maskBounds.length === 0) return { items: [], usedAreaBox: Infinity };
+
+      const placed = [];
+      const coarseStep = Math.max(2, Math.round(2 * res)); // шаг 2 мм на грубом проходе + точная доводка до 1 px
+      const maxItems = 120;
+
+      for (let stepIdx = 0; stepIdx < maxItems; stepIdx++) {
+        // Формируем порядок углов на текущем шаге
+        let ordered = maskBounds;
+        if (alternatePref && maskBounds.length >= 2) {
+          const shift = stepIdx % maskBounds.length;
+          ordered = maskBounds.slice(shift).concat(maskBounds.slice(0, shift));
+        }
+
+        let bestPlacement = null;
+
+        for (let bIdx = 0; bIdx < ordered.length; bIdx++) {
+          const { m, maxGx, maxGy } = ordered[bIdx];
+          let foundGx = -1;
+          let foundGy = -1;
+
+          if (scanMode === 'row') {
+            outerRow:
+            for (let gy = 0; gy <= maxGy; gy += coarseStep) {
+              // Если уже нашли более высокое размещение другим углом — выходим раньше
+              if (bestPlacement && gy > bestPlacement.gy + coarseStep) break;
+              for (let gx = 0; gx <= maxGx; gx += coarseStep) {
+                if (!collidesBitmask(board, boardWords, m, gx, gy)) {
+                  foundGx = gx;
+                  foundGy = gy;
+                  break outerRow;
+                }
+              }
+            }
+          } else {
+            outerCol:
+            for (let gx = 0; gx <= maxGx; gx += coarseStep) {
+              if (bestPlacement && gx > bestPlacement.gx + coarseStep) break;
+              for (let gy = 0; gy <= maxGy; gy += coarseStep) {
+                if (!collidesBitmask(board, boardWords, m, gx, gy)) {
+                  foundGx = gx;
+                  foundGy = gy;
+                  break outerCol;
+                }
+              }
+            }
+          }
+
+          if (foundGx >= 0) {
+            // Точная доводка (прижимаем вплотную по обеим осям с шагом 1 клетка)
+            if (scanMode === 'row') {
+              while (foundGy > 0 && !collidesBitmask(board, boardWords, m, foundGx, foundGy - 1)) foundGy--;
+              while (foundGx > 0 && !collidesBitmask(board, boardWords, m, foundGx - 1, foundGy)) foundGx--;
+            } else {
+              while (foundGx > 0 && !collidesBitmask(board, boardWords, m, foundGx - 1, foundGy)) foundGx--;
+              while (foundGy > 0 && !collidesBitmask(board, boardWords, m, foundGx, foundGy - 1)) foundGy--;
+            }
+
+            // Выбираем самую компактную позицию среди углов (при alternatePref приоритет у первого угла, если разница < 8 мм)
+            const score = scanMode === 'row'
+              ? (foundGy * 10000 + foundGx)
+              : (foundGx * 10000 + foundGy);
+
+            if (!bestPlacement || score < bestPlacement.score) {
+              bestPlacement = { m, gx: foundGx, gy: foundGy, score };
+              // При жёстком чередовании «валет» сразу берём первый подошедший угол, если он близок к оптимуму
+              if (alternatePref && bIdx === 0) break;
+            }
+          }
+        }
+
+        if (!bestPlacement) break;
+
+        stampBitmask(board, boardWords, bestPlacement.m, bestPlacement.gx, bestPlacement.gy);
+        placed.push({
+          x: bestPlacement.gx / res,
+          y: bestPlacement.gy / res,
+          w: bestPlacement.m.rotW,
+          h: bestPlacement.m.rotH,
+          angle: bestPlacement.m.angle
+        });
+      }
+
+      // Считаем габарит занятой области (чем меньше при равном количестве — тем больше целый деловой обрез)
+      let maxX = 0, maxY = 0;
+      placed.forEach(p => {
+        if (p.x + p.w > maxX) maxX = p.x + p.w;
+        if (p.y + p.h > maxY) maxY = p.y + p.h;
+      });
+
+      return {
+        items: placed,
+        usedW: maxX,
+        usedH: maxY,
+        usedAreaBox: maxX * maxY
+      };
+    }
+
+    /**
+     * Главная функция раскладки коробки A02 на заданный формат листа.
+     * Прогоняет все стратегии (0°/180°, 90°/270°, микс, чередование валетом) и выбирает максимум.
+     */
+    function calculateSheetNesting(g, spec) {
+      const gap = Math.max(0, Math.min(20, Number(state.knifeGap) || 0));
+      const strategy = state.nestStrategy;
+
+      // Разрешение сетки: 1 клетка = 1 мм (быстро и точно; для крупных форматов > 900 мм 0.5 клетки/мм)
+      const res = Math.max(spec.workW, spec.workH) > 950 ? 0.5 : 1.0;
+
+      // Базовая прямоугольная сетка без вложения (для расчёта экономии)
+      const grid0Cols = g.totalW <= spec.workW + 1e-6 ? Math.floor((spec.workW + gap) / (g.totalW + gap)) : 0;
+      const grid0Rows = g.totalH <= spec.workH + 1e-6 ? Math.floor((spec.workH + gap) / (g.totalH + gap)) : 0;
+      const grid90Cols = g.totalH <= spec.workW + 1e-6 ? Math.floor((spec.workW + gap) / (g.totalH + gap)) : 0;
+      const grid90Rows = g.totalW <= spec.workH + 1e-6 ? Math.floor((spec.workH + gap) / (g.totalW + gap)) : 0;
+      const baselineGridCount = Math.max(grid0Cols * grid0Rows, grid90Cols * grid90Rows);
+
+      // Строим битовые маски для 4 ориентаций
+      const m0 = buildBoxBitmask(g, 0, gap, res);
+      const m180 = buildBoxBitmask(g, 180, gap, res);
+      const m90 = buildBoxBitmask(g, 90, gap, res);
+      const m270 = buildBoxBitmask(g, 270, gap, res);
+      const realBoxAreaMm2 = m0.realAreaMm2 || (g.totalW * g.totalH * 0.72);
+
+      const candidates = [];
+
+      if (strategy === 'no_flip') {
+        candidates.push({ ...runGreedyNestPass(spec.workW, spec.workH, gap, res, [m0], 'row', false), label: 'Прямая укладка (0°)' });
+        candidates.push({ ...runGreedyNestPass(spec.workW, spec.workH, gap, res, [m90], 'row', false), label: 'Поворот 90°' });
+        candidates.push({ ...runGreedyNestPass(spec.workW, spec.workH, gap, res, [m0, m90], 'row', false), label: 'Комбинированная (0° + 90°)' });
+      } else if (strategy === 'valet_axis') {
+        // Сохраняем долевую по одной оси (либо 0°/180°, либо 90°/270°)
+        candidates.push({ ...runGreedyNestPass(spec.workW, spec.workH, gap, res, [m0, m180], 'row', false), label: 'Валетом по горизонтали (0°/180°)' });
+        candidates.push({ ...runGreedyNestPass(spec.workW, spec.workH, gap, res, [m0, m180], 'row', true), label: 'Чередование валетом (0°/180°)' });
+        candidates.push({ ...runGreedyNestPass(spec.workW, spec.workH, gap, res, [m0, m180], 'col', false), label: 'Валетом колонками (0°/180°)' });
+        candidates.push({ ...runGreedyNestPass(spec.workW, spec.workH, gap, res, [m0, m180], 'col', true), label: 'Чередование колонками (0°/180°)' });
+
+        candidates.push({ ...runGreedyNestPass(spec.workW, spec.workH, gap, res, [m90, m270], 'row', false), label: 'Валетом с поворотом (90°/270°)' });
+        candidates.push({ ...runGreedyNestPass(spec.workW, spec.workH, gap, res, [m90, m270], 'row', true), label: 'Чередование валетом (90°/270°)' });
+        candidates.push({ ...runGreedyNestPass(spec.workW, spec.workH, gap, res, [m90, m270], 'col', false), label: 'Валетом колонками (90°/270°)' });
+        candidates.push({ ...runGreedyNestPass(spec.workW, spec.workH, gap, res, [m90, m270], 'col', true), label: 'Чередование колонками (90°/270°)' });
+      } else {
+        // Максимум: тестируем одноосевой валет + смешанные проходы (основной блок + добивка остатка поперёк)
+        candidates.push({ ...runGreedyNestPass(spec.workW, spec.workH, gap, res, [m0, m180], 'row', true), label: 'Валетом (0°/180°)' });
+        candidates.push({ ...runGreedyNestPass(spec.workW, spec.workH, gap, res, [m0, m180], 'col', true), label: 'Валетом колонками (0°/180°)' });
+        candidates.push({ ...runGreedyNestPass(spec.workW, spec.workH, gap, res, [m90, m270], 'row', true), label: 'Валетом (90°/270°)' });
+        candidates.push({ ...runGreedyNestPass(spec.workW, spec.workH, gap, res, [m90, m270], 'col', true), label: 'Валетом колонками (90°/270°)' });
+
+        candidates.push({ ...runGreedyNestPass(spec.workW, spec.workH, gap, res, [m0, m180, m90, m270], 'row', false), label: 'Смешанный нестинг (0°/180° + добивка 90°)' });
+        candidates.push({ ...runGreedyNestPass(spec.workW, spec.workH, gap, res, [m0, m180, m90, m270], 'col', false), label: 'Смешанный нестинг колонками' });
+        candidates.push({ ...runGreedyNestPass(spec.workW, spec.workH, gap, res, [m90, m270, m0, m180], 'row', false), label: 'Смешанный нестинг (90°/270° + добивка 0°)' });
+        candidates.push({ ...runGreedyNestPass(spec.workW, spec.workH, gap, res, [m90, m270, m0, m180], 'col', false), label: 'Смешанный нестинг (90°/270° колонками)' });
+      }
+
+      // Выбираем победителя: максимум штук, при равенстве — минимальная занятая площадь (целый обрез)
+      let best = candidates[0];
+      for (let i = 1; i < candidates.length; i++) {
+        const c = candidates[i];
+        if (c.items.length > best.items.length) {
+          best = c;
+        } else if (c.items.length === best.items.length && c.items.length > 0 && c.usedAreaBox < best.usedAreaBox) {
+          best = c;
+        }
+      }
+
+      // Центрируем всю уложенную группу внутри рабочей зоны листа для идеального баланса давления на высечке
+      let centeredItems = best.items;
+      if (best.items.length > 0) {
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        best.items.forEach(it => {
+          if (it.x < minX) minX = it.x;
+          if (it.y < minY) minY = it.y;
+          if (it.x + it.w > maxX) maxX = it.x + it.w;
+          if (it.y + it.h > maxY) maxY = it.y + it.h;
+        });
+        const shiftX = (spec.workW - (maxX - minX)) / 2 - minX;
+        const shiftY = (spec.workH - (maxY - minY)) / 2 - minY;
+        centeredItems = best.items.map(it => ({
+          ...it,
+          x: f(it.x + shiftX),
+          y: f(it.y + shiftY)
+        }));
+      }
+
+      const count = centeredItems.length;
+      const gain = Math.max(0, count - baselineGridCount);
+      const totalBoxArea = count * realBoxAreaMm2;
+      const zoneUtilPct = (totalBoxArea / (spec.workW * spec.workH)) * 100;
+      const sheetUtilPct = (totalBoxArea / (spec.sheetW * spec.sheetH)) * 100;
+
+      return {
+        spec,
+        items: centeredItems,
+        count,
+        baselineGridCount,
+        gain,
+        label: count > 0 ? best.label : 'Коробка не помещается в рабочую зону',
+        realBoxAreaMm2,
+        zoneUtilPct,
+        sheetUtilPct,
+        usedW: best.usedW || 0,
+        usedH: best.usedH || 0
+      };
+    }
+
+    function recomputeAllSheets() {
+      const g = calculateGeometry();
+      state.nestResults['35x50'] = calculateSheetNesting(g, getSheetSpec('35x50'));
+      state.nestResults['50x70'] = calculateSheetNesting(g, getSheetSpec('50x70'));
+      state.nestResults['custom'] = calculateSheetNesting(g, getSheetSpec('custom'));
+    }
+
+    /**
+     * Формирует SVG transform для коробки в позиции (ox + item.x, oy + item.y) под углом item.angle.
+     */
+    function getBoxSvgTransform(g, ox, oy, item) {
+      const x = ox + item.x;
+      const y = oy + item.y;
+      if (item.angle === 0) return `translate(${f(x)}, ${f(y)})`;
+      if (item.angle === 180) return `translate(${f(x + g.totalW)}, ${f(y + g.totalH)}) rotate(180)`;
+      if (item.angle === 90) return `translate(${f(x + g.totalH)}, ${f(y)}) rotate(90)`;
+      return `translate(${f(x)}, ${f(y + g.totalW)}) rotate(270)`;
+    }
+
+    // =========================================================================
+    // ОТРИСОВКА ПРЕДПРОСМОТРА (РЕЖИМ 1: КРОЙ / РЕЖИМ 2: РАСКЛАДКА НА ЛИСТ)
+    // =========================================================================
+    function render() {
+      const g = calculateGeometry();
+
+      // Обновляем статистику кроя в левой панели
+      document.getElementById('statBlankSize').textContent = `${f(g.totalW)} × ${f(g.totalH)} мм`;
+      const areaM2 = (g.totalW * g.totalH) / 1e6;
+      document.getElementById('statBlankArea').textContent = `${areaM2.toFixed(4)} м²`;
+
+      document.getElementById('panelSummaryText').innerHTML =
+        `Панели: Клей <span class="text-slate-200">${f(g.glueW)}</span> + ` +
+        `P1(<span class="text-cyan-300">${f(g.p1W)}</span>) + ` +
+        `P2(<span class="text-cyan-300">${f(g.p2W)}</span>) + ` +
+        `P3(<span class="text-cyan-300">${f(g.p3W)}</span>) + ` +
+        `P4(<span class="text-amber-300">${f(g.p4W)}</span>) = <span class="text-white font-semibold">${f(g.totalW)} мм</span><br/>` +
+        `Высота: P1 = <span class="text-cyan-300">${f(g.H + g.d)} мм</span>, P2–P4 = <span class="text-slate-200">${f(g.H)} мм</span><br/>` +
+        `Автодно: язычок <span class="text-slate-200">${f(g.tongueW)} мм</span> / окошко <span class="text-emerald-300">${f(g.winTopW)} мм</span>`;
+
+      if (state.viewMode === 'box') {
+        renderBoxPreview(g);
+      } else {
+        renderSheetPreview(g);
+      }
+    }
+
+    function renderBoxPreview(g) {
+      const padLeft = state.showDims ? 36 : 16;
+      const padTop = state.showDims ? 30 : 16;
+      const padRight = state.showDims ? 44 : 16;
+      const padBottom = state.showDims ? 34 : 16;
+
+      const vbW = g.totalW + padLeft + padRight;
+      const vbH = g.totalH + padTop + padBottom;
+      const strokeW = Math.max(0.55, Math.min(1.4, Math.max(g.totalW, g.totalH) / 520));
+      const fontSize = Math.max(7, Math.min(13, Math.max(g.totalW, g.totalH) / 48));
+
+      let svgContent = `
+        <g transform="translate(${f(padLeft)}, ${f(padTop)})">
+          <path d="${g.outerPath}" fill="rgba(56, 189, 248, 0.05)" stroke="none" />
+          <g id="CREASE" stroke="#3b82f6" stroke-width="${f(strokeW)}" stroke-dasharray="${f(strokeW * 4)} ${f(strokeW * 3)}" fill="none" stroke-linecap="round">
+            ${g.creases.map(c => `<line x1="${f(c.x1)}" y1="${f(c.y1)}" x2="${f(c.x2)}" y2="${f(c.y2)}" />`).join('')}
+          </g>
+          <g id="CUT" stroke="#ef4444" stroke-width="${f(strokeW * 1.15)}" fill="none" stroke-linejoin="round" stroke-linecap="round">
+            <path d="${g.outerPath}" />
+            ${g.innerCuts.map(p => `<path d="${p}" />`).join('')}
+            ${g.glueNotchLines.map(n => `<line x1="${f(n.x1)}" y1="${f(n.y1)}" x2="${f(n.x2)}" y2="${f(n.y2)}" />`).join('')}
+          </g>
+      `;
+
+      if (state.showDims) {
+        const dimColor = '#38bdf8';
+        const labelColor = '#94a3b8';
+        const dimY = -12;
+        const dimX = g.totalW + 18;
+        const panelLabelY = g.yTopSide + g.H * 0.5;
+
+        svgContent += `
+          <g id="DIMENSIONS" font-family="JetBrains Mono, monospace" font-size="${f(fontSize)}" text-anchor="middle">
+            <text x="${f((g.x1 + g.x2) / 2)}" y="${f(panelLabelY - fontSize * 0.4)}" fill="#e2e8f0" font-weight="600">P1</text>
+            <text x="${f((g.x1 + g.x2) / 2)}" y="${f(panelLabelY + fontSize * 0.9)}" fill="${labelColor}" font-size="${f(fontSize * 0.85)}">${f(g.p1W)} мм</text>
+
+            <text x="${f((g.x2 + g.x3) / 2)}" y="${f(panelLabelY - fontSize * 0.4)}" fill="#e2e8f0" font-weight="600">P2</text>
+            <text x="${f((g.x2 + g.x3) / 2)}" y="${f(panelLabelY + fontSize * 0.9)}" fill="${labelColor}" font-size="${f(fontSize * 0.85)}">${f(g.p2W)} мм</text>
+
+            <text x="${f((g.x3 + g.x4) / 2)}" y="${f(panelLabelY - fontSize * 0.4)}" fill="#e2e8f0" font-weight="600">P3</text>
+            <text x="${f((g.x3 + g.x4) / 2)}" y="${f(panelLabelY + fontSize * 0.9)}" fill="${labelColor}" font-size="${f(fontSize * 0.85)}">${f(g.p3W)} мм</text>
+
+            <text x="${f((g.x4 + g.x5) / 2)}" y="${f(panelLabelY - fontSize * 0.4)}" fill="#fbbf24" font-weight="600">P4</text>
+            <text x="${f((g.x4 + g.x5) / 2)}" y="${f(panelLabelY + fontSize * 0.9)}" fill="#fbbf24" font-size="${f(fontSize * 0.85)}">${f(g.p4W)} мм</text>
+
+            <line x1="0" y1="${f(dimY)}" x2="${f(g.totalW)}" y2="${f(dimY)}" stroke="${dimColor}" stroke-width="${f(strokeW * 0.7)}" />
+            <line x1="0" y1="${f(dimY - 3)}" x2="0" y2="${f(dimY + 3)}" stroke="${dimColor}" stroke-width="${f(strokeW * 0.7)}" />
+            <line x1="${f(g.totalW)}" y1="${f(dimY - 3)}" x2="${f(g.totalW)}" y2="${f(dimY + 3)}" stroke="${dimColor}" stroke-width="${f(strokeW * 0.7)}" />
+            <text x="${f(g.totalW / 2)}" y="${f(dimY - 4)}" fill="${dimColor}">Общая ширина: ${f(g.totalW)} мм</text>
+
+            <line x1="${f(dimX)}" y1="0" x2="${f(dimX)}" y2="${f(g.totalH)}" stroke="${dimColor}" stroke-width="${f(strokeW * 0.7)}" />
+            <line x1="${f(dimX - 3)}" y1="0" x2="${f(dimX + 3)}" y2="0" stroke="${dimColor}" stroke-width="${f(strokeW * 0.7)}" />
+            <line x1="${f(dimX - 3)}" y1="${f(g.totalH)}" x2="${f(dimX + 3)}" y2="${f(g.totalH)}" stroke="${dimColor}" stroke-width="${f(strokeW * 0.7)}" />
+            <text x="${f(dimX + fontSize * 1.1)}" y="${f(g.totalH / 2)}" fill="${dimColor}" transform="rotate(90, ${f(dimX + fontSize * 1.1)}, ${f(g.totalH / 2)})">Общая высота: ${f(g.totalH)} мм</text>
+
+            <line x1="-14" y1="${f(g.yTopSide)}" x2="-14" y2="${f(g.yBot)}" stroke="#34d399" stroke-width="${f(strokeW * 0.7)}" />
+            <line x1="-17" y1="${f(g.yTopSide)}" x2="-11" y2="${f(g.yTopSide)}" stroke="#34d399" stroke-width="${f(strokeW * 0.7)}" />
+            <line x1="-17" y1="${f(g.yBot)}" x2="-11" y2="${f(g.yBot)}" stroke="#34d399" stroke-width="${f(strokeW * 0.7)}" />
+            <text x="${f(-18)}" y="${f(g.yTopSide + g.H / 2)}" fill="#34d399" transform="rotate(-90, -18, ${f(g.yTopSide + g.H / 2)})">H = ${f(g.H)} мм</text>
+          </g>
+        `;
+      }
+
+      svgContent += `</g>`;
+
+      const svgEl = document.getElementById('previewSvg');
+      svgEl.setAttribute('viewBox', `0 0 ${f(vbW)} ${f(vbH)}`);
+      svgEl.setAttribute('width', `${Math.round(vbW * 1.15)}`);
+      svgEl.setAttribute('height', `${Math.round(vbH * 1.15)}`);
+      svgEl.innerHTML = svgContent;
+    }
+
+    function renderSheetPreview(g) {
+      if (!state.nestResults[state.sheetFormat]) {
+        recomputeAllSheets();
+      }
+
+      // Обновляем бейджи по всем 3 форматам
+      const updateBadge = (id, res) => {
+        const el = document.getElementById(id);
+        if (!res || res.count === 0) {
+          el.textContent = '0 шт';
+          el.className = 'px-2.5 py-1 rounded-lg font-mono text-xs font-bold bg-rose-500/15 text-rose-300 border border-rose-500/30';
+        } else {
+          el.textContent = `${res.count} шт/л`;
+          el.className = 'px-2.5 py-1 rounded-lg font-mono text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
+        }
+      };
+
+      updateBadge('badgeCount35', state.nestResults['35x50']);
+      updateBadge('badgeCount50', state.nestResults['50x70']);
+      updateBadge('badgeCountCustom', state.nestResults['custom']);
+
+      const customSpec = getSheetSpec('custom');
+      document.getElementById('customFmtSublabel').textContent = `Зона: ${f(customSpec.workW)} × ${f(customSpec.workH)} мм`;
+      document.getElementById('sheetBoxSummary').textContent = `${f(g.L)}×${f(g.W)}×${f(g.H)} мм (крой ${f(g.totalW)}×${f(g.totalH)})`;
+
+      const res = state.nestResults[state.sheetFormat];
+      const spec = res.spec;
+
+      // Тираж
+      const qty = Math.max(1, parseInt(state.orderQty, 10) || 1000);
+      const mr = Math.max(0, parseInt(state.makeready, 10) || 0);
+      const netSheets = res.count > 0 ? Math.ceil(qty / res.count) : 0;
+      const grossSheets = res.count > 0 ? netSheets + mr : 0;
+
+      document.getElementById('kpiSheetCount').textContent = `${res.count} шт.`;
+      document.getElementById('kpiGainText').textContent = res.gain > 0
+        ? `+${res.gain} шт. vs сетка (${res.baselineGridCount})`
+        : (res.count > 0 ? `Сетка: ${res.baselineGridCount} шт.` : 'Уменьшите коробку / лист больше');
+
+      document.getElementById('kpiGrossSheets').textContent = res.count > 0 ? `${grossSheets.toLocaleString('ru-RU')} л.` : '—';
+      document.getElementById('kpiNetSheets').textContent = res.count > 0 ? `Нетто: ${netSheets.toLocaleString('ru-RU')} + ${mr}` : '—';
+
+      document.getElementById('sheetNestDetails').innerHTML =
+        `Способ: <span class="text-cyan-300">${res.label}</span><br/>` +
+        `Заполнение зоны: <span class="text-emerald-300 font-semibold">${res.zoneUtilPct.toFixed(1)}%</span> • ` +
+        `Листа: <span class="text-slate-200">${res.sheetUtilPct.toFixed(1)}%</span><br/>` +
+        `Зазор ножей: <span class="text-white">${f(state.knifeGap)} мм</span> • ` +
+        `Зона: <span class="text-slate-200">${f(spec.workW)}×${f(spec.workH)} мм</span>`;
+
+      // Рисуем SVG-лист с вложенными коробками
+      const pad = 34;
+      const vbW = spec.sheetW + pad * 2;
+      const vbH = spec.sheetH + pad * 2;
+      const strokeW = Math.max(0.6, Math.min(1.5, Math.max(spec.sheetW, spec.sheetH) / 600));
+      const fontSize = Math.max(9, Math.min(16, Math.max(spec.sheetW, spec.sheetH) / 52));
+
+      const creaseGroupMarkup = g.creases
+        .map(c => `<line x1="${f(c.x1)}" y1="${f(c.y1)}" x2="${f(c.x2)}" y2="${f(c.y2)}" />`)
+        .join('');
+      const cutGroupMarkup =
+        `<path d="${g.outerPath}" />` +
+        g.innerCuts.map(p => `<path d="${p}" />`).join('') +
+        g.glueNotchLines.map(n => `<line x1="${f(n.x1)}" y1="${f(n.y1)}" x2="${f(n.x2)}" y2="${f(n.y2)}" />`).join('');
+
+      let boxesSvg = '';
+      res.items.forEach((item, idx) => {
+        const tf = getBoxSvgTransform(g, spec.marginX, spec.marginY, item);
+        const isFlipped = (item.angle === 180 || item.angle === 270);
+        const fillCol = isFlipped ? 'rgba(16, 185, 129, 0.10)' : 'rgba(56, 189, 248, 0.08)';
+        const cx = spec.marginX + item.x + item.w / 2;
+        const cy = spec.marginY + item.y + item.h / 2;
+
+        boxesSvg += `
+          <g transform="${tf}">
+            <path d="${g.outerPath}" fill="${fillCol}" stroke="none" />
+            <g stroke="#3b82f6" stroke-width="${f(strokeW * 0.85)}" stroke-dasharray="${f(strokeW * 3.5)} ${f(strokeW * 2.5)}" fill="none">${creaseGroupMarkup}</g>
+            <g stroke="#ef4444" stroke-width="${f(strokeW)}" fill="none" stroke-linejoin="round">${cutGroupMarkup}</g>
+          </g>
+          <text x="${f(cx)}" y="${f(cy)}" fill="${isFlipped ? '#6ee7b7' : '#bae6fd'}" font-family="JetBrains Mono, monospace" font-size="${f(fontSize * 0.9)}" font-weight="700" text-anchor="middle" dominant-baseline="middle" opacity="0.85">#${idx + 1} (${item.angle}°)</text>
+        `;
+      });
+
+      const emptyNotice = res.count === 0
+        ? `<text x="${f(spec.sheetW / 2)}" y="${f(spec.sheetH / 2)}" fill="#fb7185" font-family="Inter, sans-serif" font-size="${f(fontSize * 1.4)}" font-weight="700" text-anchor="middle">Развёртка (${f(g.totalW)}×${f(g.totalH)} мм) не помещается в ${f(spec.workW)}×${f(spec.workH)} мм</text>`
+        : '';
+
+      const svgContent = `
+        <g transform="translate(${pad}, ${pad})">
+          <!-- Бумажный офсетный лист -->
+          <rect x="0" y="0" width="${f(spec.sheetW)}" height="${f(spec.sheetH)}" fill="#0f172a" stroke="#64748b" stroke-width="${f(strokeW * 1.3)}" rx="2" />
+
+          <!-- Допустимая зона печати / высечки -->
+          <rect x="${f(spec.marginX)}" y="${f(spec.marginY)}" width="${f(spec.workW)}" height="${f(spec.workH)}" fill="rgba(15, 23, 42, 0.45)" stroke="#38bdf8" stroke-width="${f(strokeW)}" stroke-dasharray="${f(strokeW * 5)} ${f(strokeW * 3)}" />
+
+          <!-- Разложенные коробки -->
+          ${boxesSvg}
+          ${emptyNotice}
+
+          <!-- Подписи габаритов листа -->
+          <g font-family="JetBrains Mono, monospace" font-size="${f(fontSize)}" text-anchor="middle">
+            <text x="${f(spec.sheetW / 2)}" y="${f(-10)}" fill="#e2e8f0" font-weight="600">Лист ${spec.name} (${f(spec.sheetW)} × ${f(spec.sheetH)} мм) • Зона ${f(spec.workW)}×${f(spec.workH)} мм</text>
+            <text x="${f(spec.sheetW / 2)}" y="${f(spec.sheetH + fontSize + 8)}" fill="#38bdf8">Уложено: ${res.count} шт. • Зазор: ${f(state.knifeGap)} мм • Заполнение зоны: ${res.zoneUtilPct.toFixed(1)}%</text>
+          </g>
+        </g>
+      `;
+
+      const svgEl = document.getElementById('previewSvg');
+      svgEl.setAttribute('viewBox', `0 0 ${f(vbW)} ${f(vbH)}`);
+      svgEl.setAttribute('width', `${Math.round(vbW * 0.95)}`);
+      svgEl.setAttribute('height', `${Math.round(vbH * 0.95)}`);
+      svgEl.innerHTML = svgContent;
+    }
+
+    // =========================================================================
+    // ЭКСПОРТ ЧИСТОГО ВЕКТОРА 1:1 В МИЛЛИМЕТРАХ ДЛЯ CORELDRAW
+    // =========================================================================
+    function buildCleanSingleBoxSvg() {
+      const g = calculateGeometry();
+      const w = f(g.totalW);
+      const h = f(g.totalH);
+
+      const creaseLines = g.creases
+        .map(c => `    <line x1="${f(c.x1)}" y1="${f(c.y1)}" x2="${f(c.x2)}" y2="${f(c.y2)}" />`)
+        .join('\n');
+      const innerPaths = g.innerCuts
+        .map(p => `    <path d="${p}" />`)
+        .join('\n');
+      const notchLines = g.glueNotchLines
+        .map(n => `    <line x1="${f(n.x1)}" y1="${f(n.y1)}" x2="${f(n.x2)}" y2="${f(n.y2)}" />`)
+        .join('\n');
+
+      return `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="${w}mm" height="${h}mm" viewBox="0 0 ${w} ${h}">
+  <!-- CODE A02 Parametric Box Die-Line | L=${f(g.L)}mm W=${f(g.W)}mm H=${f(g.H)}mm d=${f(g.d)}mm -->
+  <g id="CREASE" stroke="#0000FF" stroke-width="0.2" fill="none">
+${creaseLines}
+  </g>
+  <g id="CUT" stroke="#FF0000" stroke-width="0.2" fill="none" stroke-linejoin="miter">
+    <path d="${g.outerPath}" />
+${innerPaths}${notchLines ? '\n' + notchLines : ''}
+  </g>
+</svg>
+`;
+    }
+
+    function buildCleanSheetExportSvg() {
+      const g = calculateGeometry();
+      if (!state.nestResults[state.sheetFormat]) recomputeAllSheets();
+      const res = state.nestResults[state.sheetFormat];
+      const spec = res.spec;
+
+      const creaseInner = g.creases
+        .map(c => `      <line x1="${f(c.x1)}" y1="${f(c.y1)}" x2="${f(c.x2)}" y2="${f(c.y2)}" />`)
+        .join('\n');
+      const cutInner =
+        `      <path d="${g.outerPath}" />\n` +
+        g.innerCuts.map(p => `      <path d="${p}" />`).join('\n') +
+        (g.glueNotchLines.length ? '\n' + g.glueNotchLines.map(n => `      <line x1="${f(n.x1)}" y1="${f(n.y1)}" x2="${f(n.x2)}" y2="${f(n.y2)}" />`).join('\n') : '');
+
+      const allCreases = res.items.map((item, idx) => {
+        const tf = getBoxSvgTransform(g, spec.marginX, spec.marginY, item);
+        return `    <g id="CREASE_BOX_${idx + 1}" transform="${tf}">\n${creaseInner}\n    </g>`;
+      }).join('\n');
+
+      const allCuts = res.items.map((item, idx) => {
+        const tf = getBoxSvgTransform(g, spec.marginX, spec.marginY, item);
+        return `    <g id="CUT_BOX_${idx + 1}" transform="${tf}">\n${cutInner}\n    </g>`;
+      }).join('\n');
+
+      return `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="${f(spec.sheetW)}mm" height="${f(spec.sheetH)}mm" viewBox="0 0 ${f(spec.sheetW)} ${f(spec.sheetH)}">
+  <!-- CODE A02 Offset Sheet Nesting | Sheet=${f(spec.sheetW)}x${f(spec.sheetH)}mm Work=${f(spec.workW)}x${f(spec.workH)}mm | Box=${f(g.L)}x${f(g.W)}x${f(g.H)}mm | Count=${res.count}pcs | Gap=${f(state.knifeGap)}mm -->
+  <g id="SHEET_GUIDES" fill="none">
+    <rect x="0" y="0" width="${f(spec.sheetW)}" height="${f(spec.sheetH)}" stroke="#888888" stroke-width="0.2" />
+    <rect x="${f(spec.marginX)}" y="${f(spec.marginY)}" width="${f(spec.workW)}" height="${f(spec.workH)}" stroke="#00AA00" stroke-width="0.2" stroke-dasharray="4 3" />
+  </g>
+  <g id="CREASE" stroke="#0000FF" stroke-width="0.2" fill="none">
+${allCreases}
+  </g>
+  <g id="CUT" stroke="#FF0000" stroke-width="0.2" fill="none" stroke-linejoin="miter">
+${allCuts}
+  </g>
+</svg>
+`;
+    }
+
+    function downloadFile(content, filename, mimeType) {
+      const blob = new Blob([content], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    // =========================================================================
+    // ПЕРЕКЛЮЧЕНИЕ РЕЖИМОВ И УПРАВЛЕНИЕ МАСШТАБОМ
+    // =========================================================================
+    function setViewMode(mode) {
+      state.viewMode = mode;
+      const isSheet = mode === 'sheet';
+
+      document.getElementById('boxControlsPanel').classList.toggle('hidden', isSheet);
+      document.getElementById('sheetControlsPanel').classList.toggle('hidden', !isSheet);
+
+      const tabBox = document.getElementById('tabBoxMode');
+      const tabSheet = document.getElementById('tabSheetMode');
+      const activeCls = 'px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer bg-cyan-500/20 text-cyan-300 border border-cyan-500/40';
+      const inactiveCls = 'px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer text-slate-400 hover:text-white border border-transparent';
+
+      tabBox.className = isSheet ? inactiveCls : activeCls;
+      tabSheet.className = (isSheet ? activeCls : inactiveCls) + ' flex items-center gap-1.5';
+
+      document.getElementById('btnDownloadSvgLabel').textContent = isSheet
+        ? 'Скачать раскладку SVG (1:1)'
+        : 'Скачать SVG (1:1 мм)';
+
+      const legendValet = document.getElementById('legendValet');
+      legendValet.classList.toggle('hidden', !isSheet);
+      legendValet.classList.toggle('flex', isSheet);
+
+      if (isSheet) {
+        recomputeAllSheets();
+        // Автоматически выбираем лучший формат, если в текущем 0 шт, а в 50x70 помещается
+        if (state.nestResults[state.sheetFormat].count === 0 && state.nestResults['50x70'].count > 0) {
+          selectSheetFormat('50x70', false);
+        }
+      }
+
+      render();
+      requestAnimationFrame(fitToViewport);
+    }
+
+    function selectSheetFormat(fmtId, shouldRender = true) {
+      state.sheetFormat = fmtId;
+      document.querySelectorAll('.sheet-fmt-btn').forEach(btn => {
+        const active = btn.dataset.format === fmtId;
+        btn.className = active
+          ? 'sheet-fmt-btn text-left px-3 py-2.5 rounded-xl border transition cursor-pointer bg-cyan-500/15 border-cyan-500/60 flex items-center justify-between'
+          : 'sheet-fmt-btn text-left px-3 py-2.5 rounded-xl border transition cursor-pointer bg-slate-900 border-slate-700 hover:border-cyan-500/50 flex items-center justify-between';
+      });
+      document.getElementById('customFormatInputs').classList.toggle('hidden', fmtId !== 'custom');
+
+      if (shouldRender) {
+        render();
+        requestAnimationFrame(fitToViewport);
+      }
+    }
+
+    function applyTransform() {
+      const wrap = document.getElementById('panZoomWrap');
+      wrap.style.transform = `translate(${state.panX}px, ${state.panY}px) scale(${state.zoom})`;
+      document.getElementById('zoomLabel').textContent = `${Math.round(state.zoom * 100)}%`;
+    }
+
+    function fitToViewport() {
+      const vp = document.getElementById('viewport');
+      const svg = document.getElementById('previewSvg');
+      const svgW = parseFloat(svg.getAttribute('width')) || 500;
+      const svgH = parseFloat(svg.getAttribute('height')) || 600;
+      const availW = Math.max(200, vp.clientWidth - 48);
+      const availH = Math.max(200, vp.clientHeight - 48);
+      state.zoom = Math.max(0.15, Math.min(2.5, Math.min(availW / svgW, availH / svgH)));
+      state.panX = 0;
+      state.panY = 0;
+      applyTransform();
+    }
+
+    // =========================================================================
+    // ОБРАБОТЧИКИ СОБЫТИЙ
+    // =========================================================================
+    function bindEvents() {
+      const invalidateNesting = () => {
+        state.nestResults = { '35x50': null, '50x70': null, 'custom': null };
+      };
+
+      const bindBoxNum = (id, key) => {
+        const el = document.getElementById(id);
+        el.addEventListener('input', () => {
+          state[key] = parseFloat(el.value);
+          invalidateNesting();
+          render();
+        });
+      };
+
+      bindBoxNum('inputL', 'L');
+      bindBoxNum('inputW', 'W');
+      bindBoxNum('inputH', 'H');
+      bindBoxNum('inputD', 'd');
+      bindBoxNum('inputGlueW', 'glueW');
+      bindBoxNum('inputTuckH', 'tuckH');
+
+      document.getElementById('chkGlueNotches').addEventListener('change', (e) => {
+        state.glueNotches = e.target.checked;
+        render();
+      });
+
+      document.getElementById('chkShowDims').addEventListener('change', (e) => {
+        state.showDims = e.target.checked;
+        render();
+      });
+
+      // Пресеты коробки
+      document.querySelectorAll('.preset-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.L = parseFloat(btn.dataset.l);
+          state.W = parseFloat(btn.dataset.w);
+          state.H = parseFloat(btn.dataset.h);
+          document.getElementById('inputL').value = state.L;
+          document.getElementById('inputW').value = state.W;
+          document.getElementById('inputH').value = state.H;
+          invalidateNesting();
+          render();
+          fitToViewport();
+        });
+      });
+
+      // Переключение режимов
+      document.getElementById('tabBoxMode').addEventListener('click', () => setViewMode('box'));
+      document.getElementById('tabSheetMode').addEventListener('click', () => setViewMode('sheet'));
+      document.getElementById('btnGoToSheetNesting').addEventListener('click', () => setViewMode('sheet'));
+      document.getElementById('btnBackToBox').addEventListener('click', () => setViewMode('box'));
+
+      // Выбор формата листа
+      document.querySelectorAll('.sheet-fmt-btn').forEach(btn => {
+        btn.addEventListener('click', () => selectSheetFormat(btn.dataset.format, true));
+      });
+
+      // Свои размеры листа
+      ['inputCustomW', 'inputCustomH', 'inputCustomMargin'].forEach(id => {
+        document.getElementById(id).addEventListener('change', () => {
+          state.customSheetW = parseFloat(document.getElementById('inputCustomW').value) || 700;
+          state.customSheetH = parseFloat(document.getElementById('inputCustomH').value) || 1000;
+          state.customMargin = parseFloat(document.getElementById('inputCustomMargin').value) || 0;
+          state.nestResults['custom'] = calculateSheetNesting(calculateGeometry(), getSheetSpec('custom'));
+          render();
+          fitToViewport();
+        });
+      });
+
+      // Зазор ножей и стратегия
+      const triggerNestRecalc = () => {
+        state.knifeGap = Math.max(0, parseFloat(document.getElementById('inputKnifeGap').value) || 0);
+        state.nestStrategy = document.getElementById('selectNestStrategy').value;
+        recomputeAllSheets();
+        render();
+      };
+
+      document.getElementById('inputKnifeGap').addEventListener('change', triggerNestRecalc);
+      document.getElementById('selectNestStrategy').addEventListener('change', triggerNestRecalc);
+      document.getElementById('btnRecalcNesting').addEventListener('click', () => {
+        triggerNestRecalc();
+        showToast('Раскладка пересчитана с максимальной плотностью');
+      });
+
+      document.querySelectorAll('.gap-preset').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const val = parseFloat(btn.dataset.gap);
+          document.getElementById('inputKnifeGap').value = val;
+          document.querySelectorAll('.gap-preset').forEach(b => {
+            const active = parseFloat(b.dataset.gap) === val;
+            b.className = active
+              ? 'gap-preset flex-1 py-0.5 rounded bg-emerald-500/15 border border-emerald-500/40 text-[10px] font-mono text-emerald-300 cursor-pointer'
+              : 'gap-preset flex-1 py-0.5 rounded bg-slate-900 hover:bg-slate-800 border border-slate-700 text-[10px] font-mono text-slate-300 cursor-pointer';
+          });
+          triggerNestRecalc();
+        });
+      });
+
+      // Тираж и приладка (мгновенное обновление без пересчёта геометрии)
+      ['inputOrderQty', 'inputMakeready'].forEach(id => {
+        document.getElementById(id).addEventListener('input', () => {
+          state.orderQty = parseInt(document.getElementById('inputOrderQty').value, 10) || 1;
+          state.makeready = parseInt(document.getElementById('inputMakeready').value, 10) || 0;
+          render();
+        });
+      });
+
+      // Экспорт SVG 1:1 (зависит от активного режима)
+      document.getElementById('btnDownloadSvg').addEventListener('click', () => {
+        if (state.viewMode === 'sheet') {
+          const res = state.nestResults[state.sheetFormat];
+          if (!res || res.count === 0) {
+            showToast('Нет коробок на листе для экспорта');
+            return;
+          }
+          const svgText = buildCleanSheetExportSvg();
+          const fname = `SHEET_${res.spec.id}_A02_${f(state.L)}x${f(state.W)}x${f(state.H)}_${res.count}pcs.svg`;
+          downloadFile(svgText, fname, 'image/svg+xml;charset=utf-8');
+          showToast(`Сохранена раскладка 1:1 (${res.count} шт.): ${fname}`);
+        } else {
+          const svgText = buildCleanSingleBoxSvg();
+          const fname = `BOX_A02_${f(state.L)}x${f(state.W)}x${f(state.H)}mm.svg`;
+          downloadFile(svgText, fname, 'image/svg+xml;charset=utf-8');
+          showToast(`Сохранён 1:1 макет коробки: ${fname}`);
+        }
+      });
+
+      // Экспорт HTML-модуля
+      document.getElementById('btnDownloadHtml').addEventListener('click', () => {
+        const htmlContent = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+        downloadFile(htmlContent, 'box-a02-generator-nesting.html', 'text/html;charset=utf-8');
+        showToast('HTML-модуль сохранён: box-a02-generator-nesting.html');
+      });
+
+      // Кнопки масштаба
+      document.getElementById('btnZoomIn').addEventListener('click', () => {
+        state.zoom = Math.min(5, state.zoom * 1.2);
+        applyTransform();
+      });
+      document.getElementById('btnZoomOut').addEventListener('click', () => {
+        state.zoom = Math.max(0.15, state.zoom / 1.2);
+        applyTransform();
+      });
+      document.getElementById('btnFit').addEventListener('click', fitToViewport);
+
+      // Зум колесом и перетаскивание
+      const vp = document.getElementById('viewport');
+      vp.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const factor = e.deltaY < 0 ? 1.12 : 1 / 1.12;
+        state.zoom = Math.max(0.15, Math.min(6, state.zoom * factor));
+        applyTransform();
+      }, { passive: false });
+
+      let dragging = false;
+      let startX = 0, startY = 0;
+
+      vp.addEventListener('pointerdown', (e) => {
+        dragging = true;
+        startX = e.clientX - state.panX;
+        startY = e.clientY - state.panY;
+        vp.setPointerCapture(e.pointerId);
+      });
+      vp.addEventListener('pointermove', (e) => {
+        if (!dragging) return;
+        state.panX = e.clientX - startX;
+        state.panY = e.clientY - startY;
+        applyTransform();
+      });
+      vp.addEventListener('pointerup', (e) => {
+        dragging = false;
+        try { vp.releasePointerCapture(e.pointerId); } catch (_) {}
+      });
+
+      window.addEventListener('resize', fitToViewport);
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      bindEvents();
+      render();
+      requestAnimationFrame(fitToViewport);
+    });
+  </script>
+</body>
+</html>
