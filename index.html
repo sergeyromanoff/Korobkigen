@@ -29,6 +29,7 @@
       }
     };
   </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <style>
     body {
       font-family: 'Inter', system-ui, sans-serif;
@@ -79,7 +80,7 @@
       <div>
         <div class="flex items-center gap-2">
           <h1 class="text-sm sm:text-base font-bold text-white tracking-tight">Генератор коробок</h1>
-          <span class="px-2 py-0.5 rounded-md bg-cyan-500/15 border border-cyan-500/30 text-[10px] font-mono font-semibold text-cyan-300">АВТОДНО + НЕСТИНГ</span>
+          <span class="px-2 py-0.5 rounded-md bg-cyan-500/15 border border-cyan-500/30 text-[10px] font-mono font-semibold text-cyan-300">АВТОДНО + НЕСТИНГ + 3D</span>
         </div>
         <p class="text-[11px] text-slate-400">Параметрический штамп 1:1 (Рез #FF0000 / Биговка #0000FF) и раскладка на офсет</p>
       </div>
@@ -87,16 +88,24 @@
 
     <!-- Переключатель режимов в шапке -->
     <div class="flex items-center bg-slate-950/90 border border-slate-800 rounded-xl p-1 gap-1">
-      <button id="tabBoxMode" type="button" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
-        1. Крой коробки
+      <button id="tabBoxMode" type="button" class="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
+        1. Крой
       </button>
-      <button id="tabSheetMode" type="button" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer text-slate-400 hover:text-white border border-transparent flex items-center gap-1.5">
-        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <button id="tabSheetMode" type="button" class="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer text-slate-400 hover:text-white border border-transparent flex items-center gap-1.5">
+        <svg class="w-3.5 h-3.5 hidden sm:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <rect x="3" y="3" width="18" height="18" rx="2" />
           <line x1="3" y1="9" x2="21" y2="9" />
           <line x1="9" y1="21" x2="9" y2="9" />
         </svg>
-        <span>2. Разложить на листы</span>
+        <span>2. Листы</span>
+      </button>
+      <button id="tab3dMode" type="button" class="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer text-slate-400 hover:text-white border border-transparent flex items-center gap-1.5">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2L2 7l10 5 10-5-10-5z" />
+          <path d="M2 17l10 5 10-5" />
+          <path d="M2 12l10 5 10-5" />
+        </svg>
+        <span>3. 3D-вид</span>
       </button>
     </div>
 
@@ -156,20 +165,66 @@
     <!-- ОБЛАСТЬ ЧЕРТЕЖА (НА МОБИЛЬНОМ СРАЗУ ПОД РАЗМЕРАМИ, НА ПК СПРАВА) -->
     <main class="order-2 lg:col-start-2 lg:row-start-1 lg:row-span-2 flex flex-col min-w-0 lg:h-full overflow-hidden border-b lg:border-b-0 border-slate-800">
 
-      <!-- ПАНЕЛЬ НАД ЧЕРТЕЖОМ В РЕЖИМЕ 1: КНОПКА «РАСКИДАТЬ НА ЛИСТ» -->
+      <!-- ПАНЕЛЬ НАД ЧЕРТЕЖОМ В РЕЖИМЕ 1: КНОПКИ «РАСКИДАТЬ НА ЛИСТ» И «3D-ВИД» -->
       <div id="boxActionBar" class="px-3.5 sm:px-4 py-2.5 bg-slate-900/95 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2 shrink-0">
         <div class="flex items-center gap-2 text-xs">
           <span class="text-slate-400">Крой:</span>
           <span id="statBlankSizeTop" class="font-mono font-bold text-white">—</span>
         </div>
-        <button id="btnGoToSheetNesting" type="button" class="flex-1 sm:flex-none py-2 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 active:scale-[0.99] text-slate-950 font-bold text-xs sm:text-sm shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 transition cursor-pointer">
-          <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
-            <rect x="3" y="3" width="18" height="18" rx="2" />
-            <line x1="3" y1="9" x2="21" y2="9" />
-            <line x1="9" y1="21" x2="9" y2="9" />
-          </svg>
-          <span>Раскидать на лист</span>
-        </button>
+        <div class="flex items-center gap-2 flex-1 sm:flex-none">
+          <button id="btnGoTo3d" type="button" class="py-2 px-3 rounded-xl bg-violet-500/20 hover:bg-violet-500/30 border border-violet-500/50 text-violet-200 font-semibold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition cursor-pointer shrink-0">
+            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5z" />
+              <path d="M2 17l10 5 10-5" />
+              <path d="M2 12l10 5 10-5" />
+            </svg>
+            <span>3D-вид</span>
+          </button>
+          <button id="btnGoToSheetNesting" type="button" class="flex-1 sm:flex-none py-2 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 active:scale-[0.99] text-slate-950 font-bold text-xs sm:text-sm shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 transition cursor-pointer">
+            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <line x1="3" y1="9" x2="21" y2="9" />
+              <line x1="9" y1="21" x2="9" y2="9" />
+            </svg>
+            <span>Раскидать на лист</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ПАНЕЛЬ УПРАВЛЕНИЯ 3D-СБОРКОЙ (только в режиме 3: 3D-вид) -->
+      <div id="box3dBar" class="hidden px-3.5 sm:px-4 py-2.5 bg-slate-900/95 border-b border-slate-800 space-y-2.5 shrink-0">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <button id="btn3dPlay" type="button" class="px-3 py-1.5 rounded-lg bg-violet-500 hover:bg-violet-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition cursor-pointer shadow-md shadow-violet-500/20">
+              <svg id="icon3dPlay" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3" /></svg>
+              <span id="lbl3dPlay">Анимация</span>
+            </button>
+            <div class="flex items-center gap-1">
+              <button type="button" data-fold="0" class="fold-preset px-2 py-1 rounded-md bg-slate-800 hover:bg-slate-700 border border-slate-700 text-[11px] font-mono text-slate-300 cursor-pointer">0%</button>
+              <button type="button" data-fold="75" class="fold-preset px-2 py-1 rounded-md bg-slate-800 hover:bg-slate-700 border border-slate-700 text-[11px] font-mono text-slate-300 cursor-pointer">75%</button>
+              <button type="button" data-fold="100" class="fold-preset px-2 py-1 rounded-md bg-slate-800 hover:bg-slate-700 border border-slate-700 text-[11px] font-mono text-slate-300 cursor-pointer">100%</button>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-1.5">
+            <select id="select3dMaterial" class="bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-[11px] text-slate-200 focus:outline-none focus:border-violet-400 cursor-pointer">
+              <option value="bristol" selected>Бристоль (белый)</option>
+              <option value="kraft">Крафт-картон</option>
+              <option value="xray">Рентген (прозрачный)</option>
+            </select>
+            <button id="btn3dResetCam" type="button" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-[11px] font-medium cursor-pointer" title="Сбросить ракурс камеры">
+              Ракурс
+            </button>
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <div class="flex items-center justify-between text-[11px]">
+            <span class="text-slate-300 font-medium">Сборка коробки: <span id="foldStageLabel" class="text-violet-300 font-semibold">Собрана</span></span>
+            <span id="foldPctLabel" class="font-mono font-bold text-cyan-300">85%</span>
+          </div>
+          <input id="foldSlider" type="range" min="0" max="100" step="0.5" value="85" class="w-full h-2 bg-slate-800 rounded-lg cursor-pointer accent-violet-400" />
+        </div>
       </div>
 
       <!-- ПАНЕЛЬ ПЕРЕКЛЮЧЕНИЯ ФОРМАТА ЛИСТА НАД ЧЕРТЕЖОМ (только в режиме 2: раскладка) -->
@@ -218,7 +273,7 @@
       </div>
 
       <!-- ПАНЕЛЬ ИНСТРУМЕНТОВ ЧЕРТЕЖА -->
-      <div class="px-3.5 sm:px-4 py-2 bg-slate-900 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs shrink-0">
+      <div id="toolbar2d" class="px-3.5 sm:px-4 py-2 bg-slate-900 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs shrink-0">
         <div class="flex flex-wrap items-center gap-3 sm:gap-4 text-[11px] text-slate-300">
           <span class="flex items-center gap-1.5">
             <span class="w-4 h-0.5 bg-red-500 inline-block"></span>
@@ -264,6 +319,14 @@
 
         <div class="absolute bottom-3 left-3 px-2.5 py-1 rounded-md bg-slate-900/85 border border-slate-800 text-[10px] font-mono text-slate-400 pointer-events-none">
           Колесо мыши: масштаб • Перетаскивание: сдвиг чертежа
+        </div>
+      </div>
+
+      <!-- ИНТЕРАКТИВНЫЙ 3D ХОЛСТ (Three.js) -->
+      <div id="viewport3d" class="hidden flex-1 blueprint-grid relative overflow-hidden select-none min-h-[380px] sm:min-h-[460px] cursor-grab active:cursor-grabbing touch-none">
+        <canvas id="canvas3d" class="block w-full h-full"></canvas>
+        <div class="absolute bottom-3 left-3 px-2.5 py-1 rounded-md bg-slate-900/85 border border-slate-800 text-[10px] font-mono text-slate-400 pointer-events-none">
+          Вращение: палец / ЛКМ • Зум: щипок / колесо мыши
         </div>
       </div>
     </main>
@@ -337,7 +400,7 @@
       <!-- Текущая коробка (компактная сводка + кнопка возврата) -->
       <div class="bg-slate-850 border border-cyan-500/30 rounded-xl p-3 flex items-center justify-between gap-2">
         <div>
-          <div class="text-[10px] uppercase tracking-wider text-cyan-400 font-semibold">Текущая развёртка A02</div>
+          <div class="text-[10px] uppercase tracking-wider text-cyan-400 font-semibold">Текущая развёртка</div>
           <div id="sheetBoxSummary" class="text-xs font-mono text-white font-semibold mt-0.5">—</div>
         </div>
         <button id="btnBackToBox" type="button" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-[11px] font-medium transition cursor-pointer shrink-0">
@@ -430,13 +493,13 @@
 
   <script>
     // =========================================================================
-    // СОСТОЯНИЕ ПАРАМЕТРОВ КОРОБКИ CODE A02 И ОФСЕТНОЙ РАСКЛАДКИ
+    // СОСТОЯНИЕ ПАРАМЕТРОВ КОРОБКИ И ОФСЕТНОЙ РАСКЛАДКИ
     // =========================================================================
     const state = {
       // Режим интерфейса: 'box' (крой 1 шт.) | 'sheet' (раскладка на лист)
       viewMode: 'box',
 
-      // Геометрия коробки A02
+      // Геометрия коробки
       L: 90,
       W: 90,
       H: 297,
@@ -463,10 +526,16 @@
         'custom': null
       },
 
-      // Зум / Пан
+      // Зум / Пан (2D)
       zoom: 1,
       panX: 0,
-      panY: 0
+      panY: 0,
+
+      // Параметры 3D-вида и сборки
+      foldPct: 85,
+      material3d: 'bristol', // 'bristol' | 'kraft' | 'xray'
+      playing3d: false,
+      playDir3d: 1
     };
 
     function f(num) {
@@ -554,7 +623,7 @@
     }
 
     // =========================================================================
-    // РАСЧЁТ ПАРАМЕТРИЧЕСКОЙ ГЕОМЕТРИИ РАЗВЁРТКИ CODE A02
+    // РАСЧЁТ ПАРАМЕТРИЧЕСКОЙ ГЕОМЕТРИИ РАЗВЁРТКИ
     // =========================================================================
     function calculateGeometry() {
       const L = Math.max(25, Math.min(600, Number(state.L) || 90));
@@ -1059,7 +1128,7 @@
     }
 
     /**
-     * Главная функция раскладки коробки A02 на заданный формат листа.
+     * Главная функция раскладки коробки на заданный формат листа.
      * Прогоняет все стратегии (0°/180°, 90°/270°, микс, чередование валетом) и выбирает максимум.
      */
     function calculateSheetNesting(g, spec) {
@@ -1183,6 +1252,556 @@
       return `translate(${f(x)}, ${f(y + g.totalW)}) rotate(270)`;
     }
 
+
+    // =========================================================================
+    // 3D-ВИЗУАЛИЗАЦИЯ И КИНЕМАТИКА СБОРКИ КОРОБКИ (THREE.JS)
+    // =========================================================================
+    const box3d = {
+      inited: false,
+      scene: null,
+      camera: null,
+      renderer: null,
+      rootGroup: null,
+      pivots: null,
+      rafId: null,
+      lastTime: 0,
+      // Сферические координаты камеры (custom Orbit + Touch Pinch)
+      theta: 0.62,
+      phi: 1.12,
+      radius: 420,
+      targetY: 0
+    };
+
+    function smoothStep(t) {
+      const x = Math.max(0, Math.min(1, t));
+      return x * x * (3 - 2 * x);
+    }
+
+    function subProgress(t, start, end) {
+      if (t <= start) return 0;
+      if (t >= end) return 1;
+      return smoothStep((t - start) / (end - start));
+    }
+
+    function create3dMaterialPair() {
+      const mode = state.material3d;
+      if (mode === 'kraft') {
+        return {
+          front: new THREE.MeshStandardMaterial({ color: 0xc89b6e, roughness: 0.85, metalness: 0.02, side: THREE.FrontSide }),
+          back: new THREE.MeshStandardMaterial({ color: 0xb08256, roughness: 0.9, metalness: 0.02, side: THREE.BackSide }),
+          edgeColor: 0x5c3c21
+        };
+      }
+      if (mode === 'xray') {
+        return {
+          front: new THREE.MeshStandardMaterial({ color: 0x38bdf8, roughness: 0.3, metalness: 0.1, transparent: true, opacity: 0.42, side: THREE.DoubleSide, depthWrite: false }),
+          back: null,
+          edgeColor: 0x7dd3fc
+        };
+      }
+      // bristol (белый картон)
+      return {
+        front: new THREE.MeshStandardMaterial({ color: 0xf4f6f8, roughness: 0.68, metalness: 0.02, side: THREE.FrontSide }),
+        back: new THREE.MeshStandardMaterial({ color: 0xdbe2ea, roughness: 0.82, metalness: 0.02, side: THREE.BackSide }),
+        edgeColor: 0x64748b
+      };
+    }
+
+    /**
+     * Создаёт 3D-панель из массива 2D-точек (x, y) и опционального выреза-окошка (holePts).
+     * В 3D: +Z — внутренняя сторона (куда складываются клапаны), -Z — внешняя печатная сторона.
+     */
+    function makePanelMesh(pts, mats, holePts = null) {
+      const shape = new THREE.Shape();
+      pts.forEach((p, i) => {
+        if (i === 0) shape.moveTo(p[0], p[1]);
+        else shape.lineTo(p[0], p[1]);
+      });
+      shape.closePath();
+
+      if (holePts && holePts.length >= 3) {
+        const hole = new THREE.Path();
+        holePts.forEach((p, i) => {
+          if (i === 0) hole.moveTo(p[0], p[1]);
+          else hole.lineTo(p[0], p[1]);
+        });
+        hole.closePath();
+        shape.holes.push(hole);
+      }
+
+      const geo = new THREE.ShapeGeometry(shape, 12);
+      const grp = new THREE.Group();
+
+      if (mats.back) {
+        // Внутренняя (+Z) и внешняя (-Z) стороны с лёгкой разницей оттенка для наглядности
+        const mIn = new THREE.Mesh(geo, mats.back);
+        const mOut = new THREE.Mesh(geo, mats.front);
+        // Поворачиваем нормали: ShapeGeometry смотрит в +Z (внутрь), поэтому front/back ставим по сторонам
+        mIn.material = mats.back.clone();
+        mIn.material.side = THREE.FrontSide;
+        mOut.material = mats.front.clone();
+        mOut.material.side = THREE.BackSide;
+        grp.add(mIn);
+        grp.add(mOut);
+      } else {
+        grp.add(new THREE.Mesh(geo, mats.front));
+      }
+
+      // Тонкий контур ребра для чёткого чтения геометрии
+      const edges = new THREE.EdgesGeometry(geo, 15);
+      const lineMat = new THREE.LineBasicMaterial({ color: mats.edgeColor, transparent: true, opacity: state.material3d === 'xray' ? 0.9 : 0.45 });
+      grp.add(new THREE.LineSegments(edges, lineMat));
+
+      return grp;
+    }
+
+    function init3dScene() {
+      if (box3d.inited || typeof THREE === 'undefined') return;
+      const vp = document.getElementById('viewport3d');
+      const canvas = document.getElementById('canvas3d');
+
+      box3d.scene = new THREE.Scene();
+
+      const w = Math.max(300, vp.clientWidth);
+      const h = Math.max(300, vp.clientHeight);
+      box3d.camera = new THREE.PerspectiveCamera(40, w / h, 1, 5000);
+
+      box3d.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+      box3d.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      box3d.renderer.setSize(w, h, false);
+
+      // Мягкое студийное освещение со всех сторон
+      const hemi = new THREE.HemisphereLight(0xffffff, 0x334155, 0.95);
+      box3d.scene.add(hemi);
+
+      const dir1 = new THREE.DirectionalLight(0xffffff, 0.75);
+      dir1.position.set(250, 420, 320);
+      box3d.scene.add(dir1);
+
+      const dir2 = new THREE.DirectionalLight(0x93c5fd, 0.45);
+      dir2.position.set(-280, 160, -260);
+      box3d.scene.add(dir2);
+
+      const dir3 = new THREE.DirectionalLight(0xfef3c7, 0.28);
+      dir3.position.set(0, -300, 150);
+      box3d.scene.add(dir3);
+
+      // Сетка-пол под коробкой
+      const grid = new THREE.GridHelper(600, 24, 0x1e3a5f, 0x132238);
+      grid.position.y = -2;
+      box3d.grid = grid;
+      box3d.scene.add(grid);
+
+      box3d.rootGroup = new THREE.Group();
+      box3d.scene.add(box3d.rootGroup);
+
+      bind3dPointerControls(vp);
+      box3d.inited = true;
+    }
+
+    function bind3dPointerControls(vp) {
+      let pointers = new Map();
+      let prevPinchDist = null;
+      let prevX = 0, prevY = 0;
+
+      vp.addEventListener('pointerdown', (e) => {
+        vp.setPointerCapture(e.pointerId);
+        pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        if (pointers.size === 1) {
+          prevX = e.clientX;
+          prevY = e.clientY;
+        } else if (pointers.size === 2) {
+          const pts = Array.from(pointers.values());
+          prevPinchDist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+        }
+      });
+
+      vp.addEventListener('pointermove', (e) => {
+        if (!pointers.has(e.pointerId)) return;
+        pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+        if (pointers.size === 1) {
+          const dx = e.clientX - prevX;
+          const dy = e.clientY - prevY;
+          prevX = e.clientX;
+          prevY = e.clientY;
+          box3d.theta -= dx * 0.0085;
+          box3d.phi = Math.max(0.12, Math.min(Math.PI - 0.12, box3d.phi - dy * 0.0085));
+          update3dCamera();
+        } else if (pointers.size === 2) {
+          const pts = Array.from(pointers.values());
+          const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+          if (prevPinchDist && dist > 5) {
+            box3d.radius = Math.max(80, Math.min(2200, box3d.radius * (prevPinchDist / dist)));
+            update3dCamera();
+          }
+          prevPinchDist = dist;
+        }
+      });
+
+      const releasePtr = (e) => {
+        pointers.delete(e.pointerId);
+        prevPinchDist = null;
+        if (pointers.size === 1) {
+          const pt = Array.from(pointers.values())[0];
+          prevX = pt.x;
+          prevY = pt.y;
+        }
+        try { vp.releasePointerCapture(e.pointerId); } catch (_) {}
+      };
+      vp.addEventListener('pointerup', releasePtr);
+      vp.addEventListener('pointercancel', releasePtr);
+
+      vp.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const factor = e.deltaY > 0 ? 1.1 : 0.91;
+        box3d.radius = Math.max(80, Math.min(2200, box3d.radius * factor));
+        update3dCamera();
+      }, { passive: false });
+    }
+
+    function update3dCamera() {
+      if (!box3d.camera) return;
+      const r = box3d.radius;
+      const sinP = Math.sin(box3d.phi);
+      box3d.camera.position.set(
+        r * sinP * Math.sin(box3d.theta),
+        box3d.targetY + r * Math.cos(box3d.phi),
+        r * sinP * Math.cos(box3d.theta)
+      );
+      box3d.camera.lookAt(0, box3d.targetY, 0);
+    }
+
+    function reset3dCamera(g) {
+      const diag = Math.hypot(g.W, g.L, g.H);
+      box3d.theta = 0.62;
+      box3d.phi = 1.12;
+      box3d.radius = Math.max(220, diag * 1.95);
+      box3d.targetY = g.H * 0.5;
+      if (box3d.grid) {
+        box3d.grid.position.y = -Math.max(12, g.bot1H * 0.15);
+      }
+      update3dCamera();
+    }
+
+    /**
+     * Строит полную шарнирную 3D-модель коробки строго по размерам calculateGeometry().
+     */
+    function rebuild3dBox(g) {
+      init3dScene();
+      if (!box3d.inited) return;
+
+      // Очищаем старую геометрию
+      while (box3d.rootGroup.children.length > 0) {
+        const ch = box3d.rootGroup.children[0];
+        box3d.rootGroup.remove(ch);
+      }
+
+      const mats = create3dMaterialPair();
+      const { L, W, H, d, glueW, tuckH, p1W, p2W, p3W, p4W, dustH, bot1H, bot2H, bot3H, tongueW, winTopW } = g;
+      const glueChamfer = Math.min(glueW * 0.35, 6.0);
+      const tuckOffset = 0.5;
+      const tuckInset = Math.min(tuckH * 0.65, W * 0.14);
+      const innerGap = 3.0;
+      const chamfer1 = 1.5;
+      const taperIn = Math.min(W * 0.08, 9);
+      const taperY = bot1H * 0.56;
+
+      // Корневой контейнер с центрированием (будет динамически сдвигаться при сборке)
+      const assembly = new THREE.Group();
+      box3d.rootGroup.add(assembly);
+
+      // --- ПАНЕЛЬ 1 (Задняя стенка, фиксирована в XY, x: 0..W, y: 0..H+d) ---
+      const p1Group = new THREE.Group();
+      assembly.add(p1Group);
+      p1Group.add(makePanelMesh([[0, 0], [p1W, 0], [p1W, H + d], [0, H + d]], mats));
+
+      // Боковой клеевой клапан слева от P1 (шарнир x=0)
+      const gluePivot = new THREE.Group();
+      gluePivot.position.set(0, 0, 0);
+      p1Group.add(gluePivot);
+      gluePivot.add(makePanelMesh([
+        [0, 0],
+        [-glueW, glueChamfer],
+        [-glueW, H - glueChamfer],
+        [0, H]
+      ], mats));
+
+      // Верхняя крышка на P1 (шарнир y = H + d)
+      const lidPivot = new THREE.Group();
+      lidPivot.position.set(0, H + d, 0);
+      p1Group.add(lidPivot);
+      lidPivot.add(makePanelMesh([[0, 0], [p1W, 0], [p1W, L], [0, L]], mats));
+
+      // Запорный язычок на крышке (шарнир y = L в локальной системе крышки)
+      const tuckPivot = new THREE.Group();
+      tuckPivot.position.set(0, L, 0);
+      lidPivot.add(tuckPivot);
+      const tuckPts = [
+        [tuckOffset, 0],
+        [p1W - tuckOffset, 0],
+        [p1W - tuckOffset, tuckH * 0.45],
+        [p1W - tuckOffset - tuckInset * 0.35, tuckH * 0.85],
+        [p1W - tuckOffset - tuckInset, tuckH],
+        [tuckOffset + tuckInset, tuckH],
+        [tuckOffset + tuckInset * 0.35, tuckH * 0.85],
+        [tuckOffset, tuckH * 0.45]
+      ];
+      tuckPivot.add(makePanelMesh(tuckPts, mats));
+
+      // Нижняя основная створка автодна P1 (с окошком под замок, шарнир y = 0)
+      const bot1Pivot = new THREE.Group();
+      bot1Pivot.position.set(0, 0, 0);
+      p1Group.add(bot1Pivot);
+      const bot1Pts = [
+        [0, 0],
+        [chamfer1, -chamfer1],
+        [chamfer1, -taperY],
+        [taperIn, -bot1H],
+        [p1W - taperIn, -bot1H],
+        [p1W - chamfer1, -taperY],
+        [p1W - chamfer1, -chamfer1],
+        [p1W, 0]
+      ];
+      const winTop = bot1H * 0.60;
+      const winBot = bot1H * 0.85;
+      const winH = winBot - winTop;
+      const winBotW = Math.max(8, winTopW - winH * 0.24);
+      const cx1 = p1W / 2;
+      const bot1Hole = [
+        [cx1 - winTopW / 2, -winTop],
+        [cx1 + winTopW / 2, -winTop],
+        [cx1 + winBotW / 2, -winBot],
+        [cx1 - winBotW / 2, -winBot]
+      ];
+      bot1Pivot.add(makePanelMesh(bot1Pts, mats, bot1Hole));
+
+      // --- ПАНЕЛЬ 2 (Правая боковина, шарнир x = p1W от P1) ---
+      const p2Pivot = new THREE.Group();
+      p2Pivot.position.set(p1W, 0, 0);
+      p1Group.add(p2Pivot);
+      p2Pivot.add(makePanelMesh([[0, 0], [p2W, 0], [p2W, H], [0, H]], mats));
+
+      // Верхний пылезащитный клапан P2 (шарнир y = H)
+      const dust2Pivot = new THREE.Group();
+      dust2Pivot.position.set(0, H, 0);
+      p2Pivot.add(dust2Pivot);
+      dust2Pivot.add(makePanelMesh([
+        [0, 0],
+        [3.5, 2.8],
+        [3.5 + (dustH - 2.8) * 0.08, dustH],
+        [p2W - 3.0 - (dustH - 5.0) * 0.25, dustH],
+        [p2W - 3.0, 5.0],
+        [p2W - 0.5, 2.5],
+        [p2W - 0.5, 0]
+      ], mats));
+
+      // Нижнее крыло автодна P2 (шарнир y = 0)
+      const bot2Pivot = new THREE.Group();
+      bot2Pivot.position.set(0, 0, 0);
+      p2Pivot.add(bot2Pivot);
+      const wingDiag2 = Math.min(p2W * 0.14, bot2H * 0.35);
+      bot2Pivot.add(makePanelMesh([
+        [0, 0],
+        [wingDiag2, -wingDiag2],
+        [p2W * 0.50, -bot2H * 0.58],
+        [p2W * 0.42, -bot2H],
+        [p2W - innerGap, -bot2H],
+        [p2W - innerGap, -innerGap],
+        [p2W, 0]
+      ], mats));
+
+      // --- ПАНЕЛЬ 3 (Передняя стенка, шарнир x = p2W от P2) ---
+      const p3Pivot = new THREE.Group();
+      p3Pivot.position.set(p2W, 0, 0);
+      p2Pivot.add(p3Pivot);
+      p3Pivot.add(makePanelMesh([[0, 0], [p3W, 0], [p3W, H], [0, H]], mats));
+
+      // Центральный клиновидный замок автодна P3 (шарнир y = 0)
+      const bot3Pivot = new THREE.Group();
+      bot3Pivot.position.set(0, 0, 0);
+      p3Pivot.add(bot3Pivot);
+      const cx3 = p3W / 2;
+      const shoulderD = L * 0.48;
+      bot3Pivot.add(makePanelMesh([
+        [0, 0],
+        [cx3 - tongueW / 2, -shoulderD],
+        [cx3 - tongueW / 2, -bot3H],
+        [cx3 + tongueW / 2, -bot3H],
+        [cx3 + tongueW / 2, -shoulderD],
+        [p3W, 0]
+      ], mats));
+
+      // --- ПАНЕЛЬ 4 (Левая боковина, шарнир x = p3W от P3) ---
+      const p4Pivot = new THREE.Group();
+      p4Pivot.position.set(p3W, 0, 0);
+      p3Pivot.add(p4Pivot);
+      p4Pivot.add(makePanelMesh([[0, 0], [p4W, 0], [p4W, H], [0, H]], mats));
+
+      // Верхний пылезащитный клапан P4 (зеркало P2, шарнир y = H)
+      const dust4Pivot = new THREE.Group();
+      dust4Pivot.position.set(0, H, 0);
+      p4Pivot.add(dust4Pivot);
+      dust4Pivot.add(makePanelMesh([
+        [0.5, 0],
+        [0.5, 2.5],
+        [3.0, 5.0],
+        [3.0 + (dustH - 5.0) * 0.25, dustH],
+        [p4W - 3.5 - (dustH - 2.8) * 0.08, dustH],
+        [p4W - 3.5, 2.8],
+        [p4W, 0]
+      ], mats));
+
+      // Нижнее крыло автодна P4 (зеркало P2, шарнир y = 0)
+      const bot4Pivot = new THREE.Group();
+      bot4Pivot.position.set(0, 0, 0);
+      p4Pivot.add(bot4Pivot);
+      const wingDiag4 = Math.min(p4W * 0.14, bot2H * 0.35);
+      bot4Pivot.add(makePanelMesh([
+        [0, 0],
+        [innerGap, -innerGap],
+        [innerGap, -bot2H],
+        [p4W - p4W * 0.42, -bot2H],
+        [p4W - p4W * 0.50, -bot2H * 0.58],
+        [p4W - wingDiag4, -wingDiag4],
+        [p4W, 0]
+      ], mats));
+
+      box3d.pivots = {
+        assembly, p1Group, gluePivot, lidPivot, tuckPivot, bot1Pivot,
+        p2Pivot, dust2Pivot, bot2Pivot,
+        p3Pivot, bot3Pivot,
+        p4Pivot, dust4Pivot, bot4Pivot,
+        W, L, H
+      };
+
+      apply3dFold(state.foldPct);
+    }
+
+    /**
+     * Обновляет углы всех клапанов и стенок по положению ползунка (0..100%).
+     */
+    function apply3dFold(pct) {
+      if (!box3d.pivots) return;
+      const p = box3d.pivots;
+      const t = Math.max(0, Math.min(1, pct / 100));
+      const HALF_PI = Math.PI / 2;
+
+      // 1. Корпус и клеевой клапан (0% -> 40%)
+      const kGlue = subProgress(t, 0.00, 0.25);
+      const kWalls = subProgress(t, 0.05, 0.40);
+
+      // 2. Автодно (40% -> 70%)
+      const kBotSide = subProgress(t, 0.40, 0.58);
+      const kBotLock = subProgress(t, 0.46, 0.64);
+      const kBotMain = subProgress(t, 0.52, 0.70);
+
+      // 3. Верхние пылезащитные клапаны, крышка и язычок (70% -> 100%)
+      const kDust = subProgress(t, 0.70, 0.84);
+      const kLid = subProgress(t, 0.78, 0.94);
+      const kTuck = subProgress(t, 0.86, 1.00);
+
+      // Вращение вокруг Y (стенки сворачиваются внутрь, в +Z)
+      p.gluePivot.rotation.y = kGlue * HALF_PI;
+      p.gluePivot.position.x = kGlue * 0.4; // микро-отступ внутрь от P4 без мерцания
+      p.p2Pivot.rotation.y = -kWalls * HALF_PI;
+      p.p3Pivot.rotation.y = -kWalls * HALF_PI;
+      p.p4Pivot.rotation.y = -kWalls * HALF_PI;
+
+      // Автодно (вокруг X, внутрь в +Z, с лёгким смещением по слоям без Z-fighting)
+      p.bot2Pivot.rotation.x = -kBotSide * (HALF_PI - 0.008);
+      p.bot4Pivot.rotation.x = -kBotSide * (HALF_PI - 0.008);
+      p.bot3Pivot.rotation.x = -kBotLock * (HALF_PI - 0.016);
+      p.bot1Pivot.rotation.x = -kBotMain * (HALF_PI + 0.004);
+
+      // Верхние клапаны и крышка (вокруг X, внутрь в +Z)
+      p.dust2Pivot.rotation.x = kDust * (HALF_PI + 0.012);
+      p.dust4Pivot.rotation.x = kDust * (HALF_PI + 0.012);
+      p.lidPivot.rotation.x = kLid * HALF_PI;
+      p.tuckPivot.rotation.x = kTuck * (HALF_PI + 0.03);
+
+      // Плавное центрирование модели (в развёрнутом виде центр по X смещён вправо, в собранном — в центре коробки)
+      const flatCenterX = -(p.W + p.L);
+      const closedCenterX = -p.W / 2;
+      const closedCenterZ = -p.L / 2;
+      p.assembly.position.x = flatCenterX + (closedCenterX - flatCenterX) * kWalls;
+      p.assembly.position.z = closedCenterZ * kWalls;
+
+      // Обновляем подпись текущего этапа сборки
+      let stage = 'Развёртка (плоский лист)';
+      if (pct >= 99) stage = 'Коробка собрана';
+      else if (pct >= 70) stage = 'Закрытие крышки и клапанов';
+      else if (pct >= 40) stage = 'Сборка автодна';
+      else if (pct > 1) stage = 'Сборка корпуса';
+
+      document.getElementById('foldStageLabel').textContent = stage;
+      document.getElementById('foldPctLabel').textContent = `${Math.round(pct)}%`;
+    }
+
+    function resize3dViewport() {
+      if (!box3d.inited || !box3d.renderer) return;
+      const vp = document.getElementById('viewport3d');
+      const w = Math.max(240, vp.clientWidth);
+      const h = Math.max(240, vp.clientHeight);
+      box3d.camera.aspect = w / h;
+      box3d.camera.updateProjectionMatrix();
+      box3d.renderer.setSize(w, h, false);
+    }
+
+    function start3dLoop() {
+      if (box3d.rafId) return;
+      box3d.lastTime = performance.now();
+      const tick = (now) => {
+        if (state.viewMode !== '3d') {
+          box3d.rafId = null;
+          return;
+        }
+        const dt = Math.min(0.05, (now - box3d.lastTime) / 1000);
+        box3d.lastTime = now;
+
+        if (state.playing3d) {
+          state.foldPct += state.playDir3d * dt * 26;
+          if (state.foldPct >= 100) {
+            state.foldPct = 100;
+            state.playDir3d = -1;
+          } else if (state.foldPct <= 0) {
+            state.foldPct = 0;
+            state.playDir3d = 1;
+          }
+          document.getElementById('foldSlider').value = state.foldPct;
+          apply3dFold(state.foldPct);
+        }
+
+        if (box3d.renderer && box3d.scene && box3d.camera) {
+          box3d.renderer.render(box3d.scene, box3d.camera);
+        }
+        box3d.rafId = requestAnimationFrame(tick);
+      };
+      box3d.rafId = requestAnimationFrame(tick);
+    }
+
+    function stop3dLoop() {
+      if (box3d.rafId) {
+        cancelAnimationFrame(box3d.rafId);
+        box3d.rafId = null;
+      }
+      state.playing3d = false;
+      update3dPlayBtnUi();
+    }
+
+    function update3dPlayBtnUi() {
+      const lbl = document.getElementById('lbl3dPlay');
+      const ico = document.getElementById('icon3dPlay');
+      if (!lbl || !ico) return;
+      if (state.playing3d) {
+        lbl.textContent = 'Пауза';
+        ico.innerHTML = '<rect x="6" y="4" width="4" height="16" /><rect x="14" y="4" width="4" height="16" />';
+      } else {
+        lbl.textContent = 'Анимация';
+        ico.innerHTML = '<polygon points="5 3 19 12 5 21 5 3" />';
+      }
+    }
+
     // =========================================================================
     // ОТРИСОВКА ПРЕДПРОСМОТРА (РЕЖИМ 1: КРОЙ / РЕЖИМ 2: РАСКЛАДКА НА ЛИСТ)
     // =========================================================================
@@ -1207,8 +1826,10 @@
 
       if (state.viewMode === 'box') {
         renderBoxPreview(g);
-      } else {
+      } else if (state.viewMode === 'sheet') {
         renderSheetPreview(g);
+      } else {
+        rebuild3dBox(g);
       }
     }
 
@@ -1417,7 +2038,7 @@
 
       return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="${w}mm" height="${h}mm" viewBox="0 0 ${w} ${h}">
-  <!-- CODE A02 Parametric Box Die-Line | L=${f(g.L)}mm W=${f(g.W)}mm H=${f(g.H)}mm d=${f(g.d)}mm -->
+  <!-- Parametric Box Die-Line | L=${f(g.L)}mm W=${f(g.W)}mm H=${f(g.H)}mm d=${f(g.d)}mm -->
   <g id="CREASE" stroke="#0000FF" stroke-width="0.2" fill="none">
 ${creaseLines}
   </g>
@@ -1455,7 +2076,7 @@ ${innerPaths}${notchLines ? '\n' + notchLines : ''}
 
       return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="${f(spec.sheetW)}mm" height="${f(spec.sheetH)}mm" viewBox="0 0 ${f(spec.sheetW)} ${f(spec.sheetH)}">
-  <!-- CODE A02 Offset Sheet Nesting | Sheet=${f(spec.sheetW)}x${f(spec.sheetH)}mm Work=${f(spec.workW)}x${f(spec.workH)}mm | Box=${f(g.L)}x${f(g.W)}x${f(g.H)}mm | Count=${res.count}pcs | Gap=${f(state.knifeGap)}mm -->
+  <!-- Offset Sheet Nesting | Sheet=${f(spec.sheetW)}x${f(spec.sheetH)}mm Work=${f(spec.workW)}x${f(spec.workH)}mm | Box=${f(g.L)}x${f(g.W)}x${f(g.H)}mm | Count=${res.count}pcs | Gap=${f(state.knifeGap)}mm -->
   <g id="SHEET_GUIDES" fill="none">
     <rect x="0" y="0" width="${f(spec.sheetW)}" height="${f(spec.sheetH)}" stroke="#888888" stroke-width="0.2" />
     <rect x="${f(spec.marginX)}" y="${f(spec.marginY)}" width="${f(spec.workW)}" height="${f(spec.workH)}" stroke="#00AA00" stroke-width="0.2" stroke-dasharray="4 3" />
@@ -1486,22 +2107,33 @@ ${allCuts}
     // ПЕРЕКЛЮЧЕНИЕ РЕЖИМОВ И УПРАВЛЕНИЕ МАСШТАБОМ
     // =========================================================================
     function setViewMode(mode) {
+      const prevMode = state.viewMode;
       state.viewMode = mode;
+      const isBox = mode === 'box';
       const isSheet = mode === 'sheet';
+      const is3d = mode === '3d';
 
       document.getElementById('boxDimsPanel').classList.toggle('hidden', isSheet);
       document.getElementById('boxExtraPanel').classList.toggle('hidden', isSheet);
-      document.getElementById('boxActionBar').classList.toggle('hidden', isSheet);
+      document.getElementById('boxActionBar').classList.toggle('hidden', !isBox);
+      document.getElementById('box3dBar').classList.toggle('hidden', !is3d);
       document.getElementById('sheetControlsPanel').classList.toggle('hidden', !isSheet);
       document.getElementById('sheetFormatBar').classList.toggle('hidden', !isSheet);
 
+      document.getElementById('toolbar2d').classList.toggle('hidden', is3d);
+      document.getElementById('viewport').classList.toggle('hidden', is3d);
+      document.getElementById('viewport3d').classList.toggle('hidden', !is3d);
+
       const tabBox = document.getElementById('tabBoxMode');
       const tabSheet = document.getElementById('tabSheetMode');
-      const activeCls = 'px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer bg-cyan-500/20 text-cyan-300 border border-cyan-500/40';
-      const inactiveCls = 'px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer text-slate-400 hover:text-white border border-transparent';
+      const tab3d = document.getElementById('tab3dMode');
+      const activeCls = 'px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer bg-cyan-500/20 text-cyan-300 border border-cyan-500/40';
+      const active3dCls = 'px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer bg-violet-500/25 text-violet-200 border border-violet-500/50 flex items-center gap-1.5';
+      const inactiveCls = 'px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer text-slate-400 hover:text-white border border-transparent';
 
-      tabBox.className = isSheet ? inactiveCls : activeCls;
+      tabBox.className = isBox ? activeCls : inactiveCls;
       tabSheet.className = (isSheet ? activeCls : inactiveCls) + ' flex items-center gap-1.5';
+      tab3d.className = is3d ? active3dCls : (inactiveCls + ' flex items-center gap-1.5');
 
       document.getElementById('btnDownloadSvgLabel').textContent = isSheet
         ? 'Скачать раскладку SVG (1:1)'
@@ -1512,15 +2144,26 @@ ${allCuts}
       legendValet.classList.toggle('flex', isSheet);
 
       if (isSheet) {
+        stop3dLoop();
         recomputeAllSheets();
-        // Автоматически выбираем лучший формат, если в текущем 0 шт, а в 50x70 помещается
         if (state.nestResults[state.sheetFormat].count === 0 && state.nestResults['50x70'].count > 0) {
           selectSheetFormat('50x70', false);
         }
+        render();
+        requestAnimationFrame(fitToViewport);
+      } else if (is3d) {
+        const g = calculateGeometry();
+        render();
+        requestAnimationFrame(() => {
+          resize3dViewport();
+          if (prevMode !== '3d') reset3dCamera(g);
+          start3dLoop();
+        });
+      } else {
+        stop3dLoop();
+        render();
+        requestAnimationFrame(fitToViewport);
       }
-
-      render();
-      requestAnimationFrame(fitToViewport);
     }
 
     function selectSheetFormat(fmtId, shouldRender = true) {
@@ -1610,8 +2253,44 @@ ${allCuts}
       // Переключение режимов
       document.getElementById('tabBoxMode').addEventListener('click', () => setViewMode('box'));
       document.getElementById('tabSheetMode').addEventListener('click', () => setViewMode('sheet'));
+      document.getElementById('tab3dMode').addEventListener('click', () => setViewMode('3d'));
       document.getElementById('btnGoToSheetNesting').addEventListener('click', () => setViewMode('sheet'));
+      document.getElementById('btnGoTo3d').addEventListener('click', () => setViewMode('3d'));
       document.getElementById('btnBackToBox').addEventListener('click', () => setViewMode('box'));
+
+      // Управление 3D-сборкой
+      document.getElementById('foldSlider').addEventListener('input', (e) => {
+        state.playing3d = false;
+        update3dPlayBtnUi();
+        state.foldPct = parseFloat(e.target.value) || 0;
+        apply3dFold(state.foldPct);
+      });
+
+      document.getElementById('btn3dPlay').addEventListener('click', () => {
+        state.playing3d = !state.playing3d;
+        if (state.playing3d && state.foldPct >= 99) state.playDir3d = -1;
+        if (state.playing3d && state.foldPct <= 1) state.playDir3d = 1;
+        update3dPlayBtnUi();
+      });
+
+      document.querySelectorAll('.fold-preset').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.playing3d = false;
+          update3dPlayBtnUi();
+          state.foldPct = parseFloat(btn.dataset.fold) || 0;
+          document.getElementById('foldSlider').value = state.foldPct;
+          apply3dFold(state.foldPct);
+        });
+      });
+
+      document.getElementById('select3dMaterial').addEventListener('change', (e) => {
+        state.material3d = e.target.value;
+        if (state.viewMode === '3d') rebuild3dBox(calculateGeometry());
+      });
+
+      document.getElementById('btn3dResetCam').addEventListener('click', () => {
+        reset3dCamera(calculateGeometry());
+      });
 
       // Выбор формата листа
       document.querySelectorAll('.sheet-fmt-btn').forEach(btn => {
@@ -1677,12 +2356,12 @@ ${allCuts}
             return;
           }
           const svgText = buildCleanSheetExportSvg();
-          const fname = `SHEET_${res.spec.id}_A02_${f(state.L)}x${f(state.W)}x${f(state.H)}_${res.count}pcs.svg`;
+          const fname = `SHEET_${res.spec.id}_BOX_${f(state.L)}x${f(state.W)}x${f(state.H)}_${res.count}pcs.svg`;
           downloadFile(svgText, fname, 'image/svg+xml;charset=utf-8');
           showToast(`Сохранена раскладка 1:1 (${res.count} шт.): ${fname}`);
         } else {
           const svgText = buildCleanSingleBoxSvg();
-          const fname = `BOX_A02_${f(state.L)}x${f(state.W)}x${f(state.H)}mm.svg`;
+          const fname = `BOX_${f(state.L)}x${f(state.W)}x${f(state.H)}mm.svg`;
           downloadFile(svgText, fname, 'image/svg+xml;charset=utf-8');
           showToast(`Сохранён 1:1 макет коробки: ${fname}`);
         }
@@ -1691,8 +2370,8 @@ ${allCuts}
       // Экспорт HTML-модуля
       document.getElementById('btnDownloadHtml').addEventListener('click', () => {
         const htmlContent = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
-        downloadFile(htmlContent, 'box-a02-generator-nesting.html', 'text/html;charset=utf-8');
-        showToast('HTML-модуль сохранён: box-a02-generator-nesting.html');
+        downloadFile(htmlContent, 'box-generator-nesting.html', 'text/html;charset=utf-8');
+        showToast('HTML-модуль сохранён: box-generator-nesting.html');
       });
 
       // Кнопки масштаба
@@ -1735,7 +2414,7 @@ ${allCuts}
         try { vp.releasePointerCapture(e.pointerId); } catch (_) {}
       });
 
-      window.addEventListener('resize', fitToViewport);
+      window.addEventListener('resize', () => { fitToViewport(); resize3dViewport(); });
     }
 
     window.addEventListener('DOMContentLoaded', () => {
